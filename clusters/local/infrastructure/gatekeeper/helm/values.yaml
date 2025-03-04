@@ -1,0 +1,69 @@
+# Values for Gatekeeper Helm chart
+# Reference: https://github.com/open-policy-agent/gatekeeper/tree/master/charts/gatekeeper
+
+# Number of replicas
+replicas: 1
+
+# Audit interval in seconds
+auditInterval: 30
+
+# Log level (INFO, DEBUG, WARNING, ERROR, CRITICAL)
+logLevel: INFO
+
+# Controller Manager configuration
+controllerManager:
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# Audit configuration
+audit:
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# Webhook configuration
+webhook:
+  enabled: true
+  # Resource limits and requests are inherited from controllerManager
+
+# Exempt namespaces from Gatekeeper webhook and constraints
+exemptNamespaces:
+  - kube-system
+  - gatekeeper-system
+
+# Disable mutation feature
+mutatingWebhook: false
+
+# Custom annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8888"
+
+# Metrics configuration
+emitAdmissionEvents: true
+emitAuditEvents: true
+enableExternalData: true
+
+# Validating webhook timeout
+validatingWebhookTimeoutSeconds: 3
+
+# PostInstall job (create default sync config)
+postInstall:
+  labelNamespace:
+    enabled: false
+  
+# PostUpgrade job
+postUpgrade:
+  labelNamespace:
+    enabled: false 

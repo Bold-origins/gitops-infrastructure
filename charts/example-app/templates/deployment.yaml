@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "example-app.fullname" . }}
+  labels:
+    {{- include "example-app.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "example-app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "example-app.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- if .Values.vault.enabled }}
+        {{- toYaml .Values.vault.annotations | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "example-app.serviceAccountName" . }}
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- if .Values.command }}
+        command:
+        {{- toYaml .Values.command | nindent 8 }}
+        {{- end }}
+        {{- if .Values.args }}
+        args:
+        {{- toYaml .Values.args | nindent 8 }}
+        {{- end }}
+        env:
+        {{- if .Values.sealedSecrets.enabled }}
+        {{- range .Values.sealedSecrets.env }}
+        - name: {{ .name }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Values.sealedSecrets.secretName }}
+              key: {{ .key }}
+        {{- end }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        {{- if .Values.probes.readiness.enabled }}
+        readinessProbe:
+          exec:
+            command:
+            {{- toYaml .Values.probes.readiness.command | nindent 12 }}
+          initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+        {{- end }}
+        {{- if .Values.probes.liveness.enabled }}
+        livenessProbe:
+          exec:
+            command:
+            {{- toYaml .Values.probes.liveness.command | nindent 12 }}
+          initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+          periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+        {{- end }} 

@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Common labels to be added to all resources
+commonLabels:
+  environment: local
+  managed-by: kustomize
+
+# Common annotations to be added to all resources
+commonAnnotations:
+  source: "gitops-infrastructure"
+
+resources:
+- infrastructure/cert-manager
+- infrastructure/sealed-secrets
+- infrastructure/vault
+- infrastructure/gatekeeper
+- apps/example
+- apps/minio
+
+# This namespace configuration ensures any resources without a namespace
+# defined will use the default namespace
+namespace: default 

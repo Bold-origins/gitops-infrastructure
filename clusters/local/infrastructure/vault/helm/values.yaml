@@ -1,0 +1,71 @@
+# Values for Vault Helm chart
+# Reference: https://github.com/hashicorp/vault-helm
+
+# Server configuration
+server:
+  # Use development mode for local testing
+  dev:
+    enabled: true
+    devRootToken: "root"
+  
+  # Standard service configuration
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 8200
+    targetPort: 8200
+  
+  # Disable data storage for development (uses in-memory storage)
+  dataStorage:
+    enabled: false
+  
+  # Enable standalone mode (vs HA)
+  standalone:
+    enabled: true
+  
+  # Resource limits and requests
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  
+  # Service account configuration
+  serviceAccount:
+    create: true
+    name: vault
+    annotations: {}
+  
+  # Pod annotations
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/v1/sys/metrics"
+    prometheus.io/port: "8200"
+  
+  # Extra environment variables
+  extraEnvironmentVars:
+    VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    VAULT_ADDR: "http://localhost:8200"
+  
+  # Image configuration
+  image:
+    repository: hashicorp/vault
+    tag: latest
+    pullPolicy: IfNotPresent
+
+# UI configuration
+ui:
+  enabled: true
+  serviceType: "ClusterIP"
+  serviceNodePort: null
+  externalPort: 8200
+
+# Injector configuration (disabled for simplicity in development)
+injector:
+  enabled: false
+
+# CSI provider configuration (disabled for development)
+csi:
+  enabled: false 

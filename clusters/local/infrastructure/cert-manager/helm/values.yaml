@@ -1,0 +1,57 @@
+# Values for cert-manager Helm chart
+# Reference: https://github.com/cert-manager/cert-manager/tree/master/deploy/charts/cert-manager
+
+installCRDs: true
+
+global:
+  leaderElection:
+    namespace: cert-manager
+  
+# Controller settings
+replicaCount: 1
+  
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
+
+# Enable Prometheus monitoring
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: false
+
+# Enable webhook validation
+webhook:
+  enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# Enable cainjector for CA injection
+cainjector:
+  enabled: true
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+# Extra arguments for cert-manager controller
+extraArgs:
+  - --dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53
+  - --dns01-recursive-nameservers-only
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/metrics"
+  prometheus.io/port: "9402" 

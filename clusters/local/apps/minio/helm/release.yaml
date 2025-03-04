@@ -1,0 +1,57 @@
+---
+# This is a HelmRelease Custom Resource Definition
+# In a GitOps setup with Flux or ArgoCD, this would be managed by the GitOps controller
+# For manual implementation, you would use: helm template minio/minio --values values.yaml | kubectl apply -f -
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: minio
+  namespace: minio
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: minio
+      version: 5.0.7
+      sourceRef:
+        kind: HelmRepository
+        name: minio
+        namespace: flux-system
+  values:
+    # These values would be read from the values.yaml file
+    mode: standalone
+    accessKey: minioadmin
+    secretKey: minioadmin
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+    persistence:
+      enabled: false
+    service:
+      type: ClusterIP
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
+      tls:
+      - hosts:
+        - minio.local
+        secretName: minio-tls
+      hosts:
+      - minio.local
+
+---
+# For reference, this is the HelmRepository CRD that would be used with Flux v2
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: minio
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.min.io/ 

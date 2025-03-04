@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: example-network-policy
+  namespace: example
+spec:
+  podSelector:
+    matchLabels:
+      app: example-app
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: default
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  - to:
+    # Allow communication with Vault
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: vault
+    ports:
+    - protocol: TCP
+      port: 8200
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 53
+  # Allow communication to the Kubernetes API server for Vault auth
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+    ports:
+    - protocol: TCP
+      port: 443 
