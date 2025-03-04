@@ -64,11 +64,11 @@ data:
         size: 20Gi
       resources:
         limits:
-          cpu: 1000m
-          memory: 2Gi
-        requests:
-          cpu: 250m
+          cpu: 500m
           memory: 1Gi
+        requests:
+          cpu: 100m
+          memory: 512Mi
 
     # Studio configuration
     studio:
@@ -87,11 +87,11 @@ data:
         initialDelaySeconds: 3
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
+          cpu: 250m
           memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
 
     # Auth configuration
     auth:
@@ -109,11 +109,11 @@ data:
         GOTRUE_SMTP_SENDER_NAME: "your-mail@example.com"
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
+          cpu: 250m
           memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
 
     # REST API configuration
     rest:
@@ -122,15 +122,15 @@ data:
         tag: v12.0.1
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
+          cpu: 250m
           memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
 
     # Realtime configuration
     realtime:
-      enabled: true
+      enabled: false
       image:
         tag: v2.27.5
       livenessProbe:
@@ -140,11 +140,11 @@ data:
         initialDelaySeconds: 3
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
+          cpu: 250m
           memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
 
     # Meta configuration
     meta:
@@ -153,11 +153,11 @@ data:
         tag: v0.80.0
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
+          cpu: 250m
           memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
 
     # Storage configuration
     storage:
@@ -174,11 +174,11 @@ data:
         size: 10Gi
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
+          cpu: 250m
           memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
       # Use MinIO service from our cluster
       environment:
         STORAGE_BACKEND: s3
@@ -204,11 +204,11 @@ data:
         enabled: false
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
+          cpu: 250m
           memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
 
     # Kong API Gateway configuration
     kong:
@@ -236,15 +236,15 @@ data:
                 pathType: Prefix
       resources:
         limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
+          cpu: 250m
           memory: 512Mi
+        requests:
+          cpu: 50m
+          memory: 256Mi
 
     # Analytics configuration
     analytics:
-      enabled: true
+      enabled: false
       image:
         tag: 1.4.0
       livenessProbe:
@@ -255,7 +255,7 @@ data:
 
     # Vector configuration
     vector:
-      enabled: true
+      enabled: false
       image:
         tag: 0.34.0-alpine
       livenessProbe:
@@ -283,7 +283,7 @@ data:
 
     # Functions configuration
     functions:
-      enabled: true
+      enabled: false
       image:
         tag: v1.41.2
       resources:

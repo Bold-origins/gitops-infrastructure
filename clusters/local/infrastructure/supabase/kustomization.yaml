@@ -9,6 +9,11 @@ resources:
   - helmrelease.yaml
   - values.yaml
   - sealed-secrets/sealed-jwt-secret.yaml
+  - sealed-secrets/sealed-dashboard-secret.yaml
+  - sealed-secrets/sealed-db-secret.yaml
+  - sealed-secrets/sealed-smtp-secret.yaml
+  - sealed-secrets/sealed-analytics-secret.yaml
+  - sealed-secrets/sealed-s3-secret.yaml
 
 commonLabels:
   app.kubernetes.io/part-of: supabase 
