@@ -49,4 +49,56 @@ For production use, consider:
 3. Using a production-ready PostgreSQL deployment with replication
 4. Implementing proper backup strategies
 5. Scaling resources based on actual usage
-6. Creating additional SealedSecrets for SMTP, database, and other credentials 
+6. Creating additional SealedSecrets for SMTP, database, and other credentials
+
+# Supabase Configuration
+
+This directory contains the configuration for deploying Supabase to Kubernetes.
+
+## Security Considerations
+
+For security reasons, Supabase secrets should be managed as follows:
+
+1. **Local Development:**
+   - Sealed secrets should be used for all Supabase credentials
+   - Place sealed secret files in the `secrets/` directory (this directory is gitignored)
+   - Reference the sealed secrets in the kustomization.yaml file
+
+2. **Production/Staging Environments:**
+   - Never store plaintext secrets in the repository
+   - Use sealed-secrets for secure credential management
+   - Create the sealed secret using:
+     ```bash
+     # Create the secret
+     kubectl create secret generic supabase-jwt \
+       --namespace=supabase \
+       --from-literal=anonKey=YOUR_ANON_KEY \
+       --from-literal=serviceKey=YOUR_SERVICE_KEY \
+       --from-literal=jwtSecret=YOUR_JWT_SECRET \
+       --dry-run=client -o yaml > temp-secret.yaml
+     
+     # Seal the secret
+     kubeseal --controller-name=sealed-secrets \
+       --controller-namespace=sealed-secrets \
+       --format yaml < temp-secret.yaml > supabase-jwt-sealed.yaml
+     
+     # Clean up the temporary file
+     rm temp-secret.yaml
+     ```
+
+## Values Configuration
+
+The `values.yaml` file contains a ConfigMap with the Supabase configuration. The configuration supports referencing external secrets for sensitive data:
+
+```yaml
+secret:
+  existingSecret: supabase-jwt
+  existingSecretKeys:
+    anonKey: anonKey
+    serviceKey: serviceKey
+    jwtSecret: jwtSecret
+```
+
+## Do Not Commit Plaintext Secrets
+
+**IMPORTANT:** Never commit plaintext secrets to the repository. The `secrets/` directory and example values are added to `.gitignore` to prevent accidental commits. 

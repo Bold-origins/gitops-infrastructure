@@ -36,4 +36,8 @@ target/
 node_modules/
 
 # Local MinIO credentials
-clusters/local/infrastructure/minio/secret.yaml 
+clusters/local/infrastructure/minio/secret.yaml
+
+# Supabase secrets
+clusters/local/infrastructure/supabase/secrets/
+values.example.yaml 
