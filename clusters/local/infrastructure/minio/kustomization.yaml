@@ -4,6 +4,7 @@ kind: Kustomization
 namespace: minio
 
 resources:
+- base/namespace.yaml
 - sealed-secrets/minio-credentials-sealed.yaml
 - helm/release.yaml
 
