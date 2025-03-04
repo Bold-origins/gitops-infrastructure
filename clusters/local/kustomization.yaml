@@ -15,8 +15,10 @@ resources:
 - infrastructure/sealed-secrets
 - infrastructure/vault
 - infrastructure/gatekeeper
+- infrastructure/minio
 # Now that infrastructure is set up, let's enable applications
 - apps/example
-- apps/minio
+# MinIO moved to infrastructure directory
+# - apps/minio
 
 # Infrastructure layer is fully added, now adding applications 
