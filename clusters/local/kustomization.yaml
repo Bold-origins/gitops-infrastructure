@@ -18,6 +18,4 @@ resources:
 - apps/example
 - apps/minio
 
-# This namespace configuration ensures any resources without a namespace
-# defined will use the default namespace
-namespace: default 
+# Removed the conflicting namespace declaration that was causing issues with Flux 
