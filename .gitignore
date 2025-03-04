@@ -1,6 +1,5 @@
 # Ignore sensitive credential files
 .env
-secrets/
 credentials.json
 *.pem
 *.key
@@ -34,4 +33,7 @@ logs/
 __pycache__/
 *.class
 target/
-node_modules/ 
+node_modules/
+
+# Local MinIO credentials
+clusters/local/infrastructure/minio/secret.yaml 
