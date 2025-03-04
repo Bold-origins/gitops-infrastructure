@@ -1,0 +1,115 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: constrainttemplates.templates.gatekeeper.sh
+spec:
+  group: templates.gatekeeper.sh
+  names:
+    kind: ConstraintTemplate
+    plural: constrainttemplates
+    singular: constrainttemplate
+  scope: Cluster
+  versions:
+  - name: v1
+    served: true
+    storage: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              crd:
+                type: object
+                properties:
+                  spec:
+                    type: object
+                    properties:
+                      names:
+                        type: object
+                        properties:
+                          kind:
+                            type: string
+              targets:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    target:
+                      type: string
+                    rego:
+                      type: string
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gatekeeper-controller-manager
+  namespace: gatekeeper-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - name: manager
+        image: openpolicyagent/gatekeeper:v3.14.0
+        args:
+        - --audit-interval=30
+        - --log-level=INFO
+        - --operation=webhook
+        - --operation=audit
+        - --operation=status
+        - --exempt-namespace=kube-system
+        - --exempt-namespace=gatekeeper-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gatekeeper-webhook-service
+  namespace: gatekeeper-system
+spec:
+  selector:
+    control-plane: controller-manager
+  ports:
+  - port: 443
+    targetPort: 8443
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: gatekeeper-admin
+  namespace: gatekeeper-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: gatekeeper-admin
+rules:
+- apiGroups: ["*"]
+  resources: ["*"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["templates.gatekeeper.sh"]
+  resources: ["constrainttemplates"]
+  verbs: ["*"]
+- apiGroups: ["constraints.gatekeeper.sh"]
+  resources: ["*"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: gatekeeper-admin
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: gatekeeper-admin
+subjects:
+- kind: ServiceAccount
+  name: gatekeeper-admin
+  namespace: gatekeeper-system 

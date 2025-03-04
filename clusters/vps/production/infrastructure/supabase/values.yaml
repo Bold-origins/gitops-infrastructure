@@ -1,0 +1,310 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: supabase-values
+  namespace: supabase
+data:
+  values.yaml: |
+    # Default values for Supabase
+    
+    # Global priority class for all Supabase components
+    global:
+      priorityClassName: production-high
+    
+    # Secret configuration
+    secret:
+      existingSecret: supabase-jwt
+      existingSecretKeys:
+        anonKey: anonKey
+        serviceKey: serviceKey
+        jwtSecret: jwtSecret
+      
+      # Other secrets - these should also be managed via external secrets
+      smtp:
+        existingSecret: supabase-smtp
+        existingSecretKeys:
+          username: username
+          password: password
+      
+      dashboard:
+        existingSecret: supabase-dashboard
+        existingSecretKeys:
+          username: username
+          password: password
+      
+      db:
+        existingSecret: supabase-db
+        existingSecretKeys:
+          username: username
+          password: password
+          database: database
+      
+      analytics:
+        existingSecret: supabase-analytics
+        existingSecretKeys:
+          apiKey: apiKey
+      
+      s3:
+        existingSecret: supabase-s3
+        existingSecretKeys:
+          keyId: keyId
+          accessKey: accessKey
+
+    # PostgreSQL configuration
+    db:
+      enabled: true
+      image:
+        repository: supabase/postgres
+        tag: 15.1.0.147
+      priorityClassName: production-critical  # DB gets highest priority
+      livenessProbe:
+        exec:
+          command:
+            - pg_isready
+            - -U
+            - postgres
+        initialDelaySeconds: 3
+      persistence:
+        enabled: true
+        size: 100Gi  # Increased from 20Gi
+      resources:
+        limits:
+          cpu: 2000m   # Increased from 1000m
+          memory: 4Gi  # Increased from 2Gi
+        requests:
+          cpu: 500m    # Increased from 250m
+          memory: 2Gi  # Increased from 1Gi
+
+    # Studio configuration
+    studio:
+      enabled: true
+      image:
+        tag: 20240326-5e5586d
+      environment:
+        STUDIO_DEFAULT_ORGANIZATION: "Bold Origins"
+        STUDIO_DEFAULT_PROJECT: "Bold Origins"
+        SUPABASE_PUBLIC_URL: https://supabase.boldorigin.io/
+        NEXT_PUBLIC_ENABLE_LOGS: "false"
+      livenessProbe:
+        httpGet:
+          path: /api/profile
+          port: 3000
+        initialDelaySeconds: 3
+      resources:
+        limits:
+          cpu: 1000m   # Increased from 500m
+          memory: 2Gi  # Increased from 1Gi
+        requests:
+          cpu: 200m    # Increased from 100m
+          memory: 1Gi  # Increased from 512Mi
+
+    # Auth configuration
+    auth:
+      enabled: true
+      image:
+        tag: v2.143.0
+      priorityClassName: production-critical  # Auth gets highest priority
+      environment:
+        API_EXTERNAL_URL: https://supabase.boldorigin.io
+        GOTRUE_SITE_URL: https://supabase.boldorigin.io
+        GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+        GOTRUE_MAILER_AUTOCONFIRM: "true"
+        GOTRUE_SMTP_ADMIN_EMAIL: "rodrigo.mourey@boldorigins.io"
+        GOTRUE_SMTP_HOST: "smtp.example.com"
+        GOTRUE_SMTP_PORT: "587"
+        GOTRUE_SMTP_SENDER_NAME: "rodrigo.mourey@boldorigins.io"
+      resources:
+        limits:
+          cpu: 750m    # Increased from 500m
+          memory: 1.5Gi # Increased from 1Gi
+        requests:
+          cpu: 200m    # Increased from 100m
+          memory: 750Mi # Increased from 512Mi
+
+    # REST API configuration
+    rest:
+      enabled: true
+      image:
+        tag: v12.0.1
+      resources:
+        limits:
+          cpu: 750m    # Increased from 500m
+          memory: 1.5Gi # Increased from 1Gi
+        requests:
+          cpu: 200m    # Increased from 100m
+          memory: 750Mi # Increased from 512Mi
+
+    # Realtime configuration
+    realtime:
+      enabled: true
+      image:
+        tag: v2.27.5
+      livenessProbe:
+        httpGet:
+          path: /
+          port: 4000
+        initialDelaySeconds: 3
+      resources:
+        limits:
+          cpu: 750m    # Increased from 500m
+          memory: 1.5Gi # Increased from 1Gi
+        requests:
+          cpu: 200m    # Increased from 100m
+          memory: 750Mi # Increased from 512Mi
+
+    # Meta configuration
+    meta:
+      enabled: true
+      image:
+        tag: v0.80.0
+      resources:
+        limits:
+          cpu: 500m    # Unchanged
+          memory: 1Gi  # Unchanged
+        requests:
+          cpu: 100m    # Unchanged
+          memory: 512Mi # Unchanged
+
+    # Storage configuration
+    storage:
+      enabled: true
+      image:
+        tag: v0.46.4
+      livenessProbe:
+        httpGet:
+          path: /status
+          port: 5000
+        initialDelaySeconds: 3
+      persistence:
+        enabled: true
+        size: 50Gi    # Increased from 10Gi
+      resources:
+        limits:
+          cpu: 750m    # Increased from 500m
+          memory: 1.5Gi # Increased from 1Gi
+        requests:
+          cpu: 200m    # Increased from 100m
+          memory: 750Mi # Increased from 512Mi
+      # Use MinIO service from our cluster
+      environment:
+        STORAGE_BACKEND: s3
+        GLOBAL_S3_PROTOCOL: http
+        GLOBAL_S3_ENDPOINT: http://minio.minio.svc.cluster.local:9000
+        GLOBAL_S3_FORCE_PATH_STYLE: true
+        AWS_DEFAULT_REGION: stub
+
+    # Image proxy configuration
+    imgproxy:
+      enabled: true
+      image:
+        tag: v3.8.0
+      environment:
+        IMGPROXY_ENABLE_WEBP_DETECTION: "true"
+      livenessProbe:
+        exec:
+          command:
+            - imgproxy
+            - health
+        initialDelaySeconds: 3
+      persistence:
+        enabled: false
+      resources:
+        limits:
+          cpu: 500m    # Unchanged
+          memory: 1Gi  # Unchanged
+        requests:
+          cpu: 100m    # Unchanged
+          memory: 512Mi # Unchanged
+
+    # Kong API Gateway configuration
+    kong:
+      enabled: true
+      image:
+        repository: kong
+        tag: 2.8.1
+      priorityClassName: production-critical  # Kong gets highest priority
+      environment:
+        KONG_DECLARATIVE_CONFIG: /usr/local/kong/kong.yml
+        KONG_LOG_LEVEL: info
+      ingress:
+        enabled: true
+        className: "nginx"
+        annotations:
+          kubernetes.io/ingress.class: nginx
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+        tls:
+          - secretName: supabase-tls-prod
+            hosts:
+              - supabase.boldorigin.io
+        hosts:
+          - host: supabase.boldorigin.io
+            paths:
+              - path: /
+                pathType: Prefix
+      resources:
+        limits:
+          cpu: 750m    # Increased from 500m
+          memory: 1.5Gi # Increased from 1Gi
+        requests:
+          cpu: 200m    # Increased from 100m
+          memory: 750Mi # Increased from 512Mi
+
+    # Analytics configuration
+    analytics:
+      enabled: true
+      image:
+        tag: 1.4.0
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 4000
+        initialDelaySeconds: 3
+      resources:
+        limits:
+          cpu: 500m    # Added resource limits
+          memory: 1Gi  # Added resource limits
+        requests:
+          cpu: 100m    # Added resource requests
+          memory: 512Mi # Added resource requests
+
+    # Vector configuration
+    vector:
+      enabled: true
+      image:
+        tag: 0.34.0-alpine
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 9001
+        initialDelaySeconds: 3
+      volumeMounts:
+        - name: pod-logs
+          mountPath: /var/log/pods
+      volumes:
+        - name: pod-logs
+          hostPath:
+            path: /var/log/pods
+      resources:
+        limits:
+          cpu: 500m    # Unchanged
+          memory: 1Gi  # Unchanged
+        requests:
+          cpu: 100m    # Unchanged
+          memory: 512Mi # Unchanged
+
+    # Functions configuration
+    functions:
+      enabled: true
+      image:
+        tag: v1.41.2
+      resources:
+        limits:
+          cpu: 750m    # Increased from 500m
+          memory: 1.5Gi # Increased from 1Gi
+        requests:
+          cpu: 200m    # Increased from 100m
+          memory: 750Mi # Increased from 512Mi
+    
+    # Disable MinIO since we're using the external MinIO deployment
+    minio:
+      enabled: false
