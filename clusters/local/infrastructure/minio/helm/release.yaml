@@ -9,7 +9,7 @@ metadata:
   namespace: minio
   annotations:
     # Force reconciliation with a newer timestamp
-    reconcile.fluxcd.io/requestedAt: "2025-03-04T10:40:00Z"
+    reconcile.fluxcd.io/requestedAt: "2025-03-04T11:15:00Z"
 spec:
   interval: 5m
   chart:
@@ -20,11 +20,21 @@ spec:
         kind: HelmRepository
         name: minio
         namespace: flux-system
+  # Reference to the SealedSecret for credentials
+  valuesFrom:
+    - kind: Secret
+      name: minio-credentials
+      valuesKey: rootUser
+      targetPath: accessKey
+    - kind: Secret
+      name: minio-credentials
+      valuesKey: rootPassword
+      targetPath: secretKey
   values:
     # These values would be read from the values.yaml file
     mode: standalone
-    accessKey: minioadmin
-    secretKey: minioadmin
+    # Credentials are now provided via the SealedSecret
+    # accessKey and secretKey are removed from here
     persistence:
       enabled: true
       size: 10Gi

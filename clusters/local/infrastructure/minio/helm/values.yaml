@@ -8,8 +8,8 @@
 mode: standalone
 
 # Access credentials
-rootUser: minioadmin
-rootPassword: minioadmin
+# SECURITY NOTE: Credentials are now managed via SealedSecrets
+# Do not store sensitive information in this file
 
 # Persistence configuration
 persistence:
@@ -49,6 +49,18 @@ console:
 # Buckets to create on startup
 buckets:
   - name: example-bucket
+    policy: none
+    purge: false
+  - name: logs
+    policy: none
+    purge: false
+  - name: metrics
+    policy: none
+    purge: false
+  - name: traces
+    policy: none
+    purge: false
+  - name: alerts
     policy: none
     purge: false
 

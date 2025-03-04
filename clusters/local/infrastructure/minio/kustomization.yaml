@@ -4,8 +4,7 @@ kind: Kustomization
 namespace: minio
 
 resources:
-- base
-# Reference to Helm-based resources
+- sealed-secrets/minio-credentials-sealed.yaml
 - helm/release.yaml
 
 # Import values from the values file
@@ -13,4 +12,4 @@ configMapGenerator:
 - name: minio-values
   namespace: minio
   files:
-  - values.yaml=helm/values.yaml 
+  - values.yaml=helm/values.yaml

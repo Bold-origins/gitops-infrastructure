@@ -1,0 +1,37 @@
+# Ignore sensitive credential files
+.env
+secrets/
+credentials.json
+*.pem
+*.key
+*_key
+*_token
+
+# Ignore Kubernetes generated files
+kubeconfig*
+.kube/
+
+# Ignore logs
+*.log
+logs/
+
+# Ignore temporary files
+*.tmp
+*.temp
+.DS_Store
+
+# Ignore local development files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignore build artifacts
+*.o
+*.a
+*.so
+*.pyc
+__pycache__/
+*.class
+target/
+node_modules/ 
