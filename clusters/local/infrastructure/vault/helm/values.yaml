@@ -1,6 +1,10 @@
 # Values for Vault Helm chart
 # Reference: https://github.com/hashicorp/vault-helm
 
+# NOTE: We had an issue with the image format. The deployment was trying to use 
+# "vault:1.15.2" instead of "hashicorp/vault:1.15.2". Ensure the repository
+# is always specified as "hashicorp/vault" and a specific version tag is used.
+
 # Server configuration
 server:
   # Use development mode for local testing
@@ -52,7 +56,7 @@ server:
   # Image configuration - using specific version for reproducibility
   image:
     repository: hashicorp/vault
-    tag: "1.15.2"  # Using a specific version instead of latest
+    tag: "1.15.2"  # Using specific version instead of latest
     pullPolicy: IfNotPresent
 
 # UI configuration
