@@ -9,7 +9,7 @@ metadata:
   namespace: gatekeeper-system
   annotations:
     # Force reconciliation to pick up the new RBAC settings
-    reconcile.fluxcd.io/requestedAt: "2025-03-04T10:35:00Z"
+    reconcile.fluxcd.io/requestedAt: "2025-03-04T10:45:00Z"
 spec:
   interval: 5m
   chart:
@@ -32,12 +32,26 @@ spec:
     serviceAccount:
       create: true
       name: "gatekeeper-admin"
+    # Fix permissions for the default service account
+    clusterRoles:
+      - name: gatekeeper-manager-role
+        rules:
+          - apiGroups: ["*"]
+            resources: ["*"]
+            verbs: ["get", "list", "watch"]
+          - apiGroups: ["admissionregistration.k8s.io"]
+            resources: ["validatingwebhookconfigurations"]
+            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+          - apiGroups: [""]
+            resources: ["secrets"]
+            verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+            
     # Disable validating webhook for now to reduce permission requirements
     validatingWebhook:
-      enabled: false
+      enabled: true
     # Disable cert-rotation until permissions are fixed
     certRotation:
-      enabled: false
+      enabled: true
     controllerManager:
       resources:
         limits:

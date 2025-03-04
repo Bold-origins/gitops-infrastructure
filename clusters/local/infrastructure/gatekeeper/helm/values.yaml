@@ -19,6 +19,20 @@ serviceAccount:
   create: true
   name: "gatekeeper-admin"
 
+# Fix permissions for the default service account
+clusterRoles:
+  - name: gatekeeper-manager-role
+    rules:
+      - apiGroups: ["*"]
+        resources: ["*"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["admissionregistration.k8s.io"]
+        resources: ["validatingwebhookconfigurations"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
 # Controller Manager configuration
 controllerManager:
   # Resource limits and requests
@@ -50,6 +64,14 @@ webhook:
 exemptNamespaces:
   - kube-system
   - gatekeeper-system
+
+# Enable validating webhook
+validatingWebhook:
+  enabled: true
+
+# Enable cert rotation
+certRotation:
+  enabled: true
 
 # Disable mutation feature
 mutatingWebhook: false
