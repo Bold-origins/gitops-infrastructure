@@ -17,7 +17,8 @@ resources:
 - infrastructure/gatekeeper
 - infrastructure/minio
 # Now that infrastructure is set up, let's enable applications
-- apps/example
+# Temporarily excluding example app due to label conflict with existing deployment
+# - apps/example
 # MinIO moved to infrastructure directory
 # - apps/minio
 
