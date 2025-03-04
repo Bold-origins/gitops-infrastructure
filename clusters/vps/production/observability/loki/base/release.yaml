@@ -11,7 +11,7 @@ spec:
       version: "2.9.x"
       sourceRef:
         kind: HelmRepository
-        name: grafana
+        name: grafana-loki
         namespace: flux-system
   values:
     loki:

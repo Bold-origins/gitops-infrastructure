@@ -32,6 +32,14 @@ copy_component() {
   if [ -d "$source_dir/$component/base" ] && [ "$(ls -A "$source_dir/$component/base" 2>/dev/null)" ]; then
     echo "Copying base files..."
     cp -r "$source_dir/$component/base/"* "$dest_dir/$component/base/" 2>/dev/null || true
+    
+    # Update repository name in release.yaml if exists
+    if [ -f "$dest_dir/$component/base/release.yaml" ]; then
+      echo "Updating repository name in release.yaml..."
+      if [ "$component" = "loki" ]; then
+        sed -i "" "s|name: grafana|name: grafana-loki|g" "$dest_dir/$component/base/release.yaml"
+      fi
+    fi
   else
     echo -e "${YELLOW}No base files found for $component. Creating minimal structure...${NC}"
     
@@ -57,6 +65,12 @@ EOF
   if [ -f "$source_dir/$component/$component-source.yaml" ]; then
     echo "Copying $component-source.yaml..."
     cp "$source_dir/$component/$component-source.yaml" "$dest_dir/$component/"
+    
+    # Update repository name in source file if needed
+    if [ "$component" = "loki" ]; then
+      echo "Updating repository name in source file..."
+      sed -i "" "s|name: grafana|name: grafana-loki|g" "$dest_dir/$component/$component-source.yaml"
+    fi
   else
     echo -e "${YELLOW}No source file found for $component. Creating basic source file...${NC}"
     
@@ -91,7 +105,7 @@ EOF
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
 metadata:
-  name: grafana
+  name: grafana-loki
   namespace: flux-system
 spec:
   interval: 1h
