@@ -9,7 +9,7 @@ metadata:
   namespace: gatekeeper-system
   annotations:
     # Force reconciliation to pick up the new RBAC settings
-    reconcile.fluxcd.io/requestedAt: "2025-03-04T10:10:00Z"
+    reconcile.fluxcd.io/requestedAt: "2025-03-04T10:35:00Z"
 spec:
   interval: 5m
   chart:
@@ -32,6 +32,12 @@ spec:
     serviceAccount:
       create: true
       name: "gatekeeper-admin"
+    # Disable validating webhook for now to reduce permission requirements
+    validatingWebhook:
+      enabled: false
+    # Disable cert-rotation until permissions are fixed
+    certRotation:
+      enabled: false
     controllerManager:
       resources:
         limits:
