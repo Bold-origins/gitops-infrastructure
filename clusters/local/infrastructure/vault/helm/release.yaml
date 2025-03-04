@@ -7,6 +7,9 @@ kind: HelmRelease
 metadata:
   name: vault
   namespace: vault
+  annotations:
+    # This will force Flux to restart the deployment and pick up changes
+    reconcile.fluxcd.io/requestedAt: "2025-03-04T09:48:00Z"
 spec:
   interval: 5m
   chart:
@@ -40,6 +43,11 @@ spec:
       serviceAccount:
         create: true
         name: vault
+      # Explicitly setting the image to ensure consistency
+      image:
+        repository: hashicorp/vault
+        tag: "1.15.2"
+        pullPolicy: IfNotPresent
 
 ---
 # For reference, this is the HelmRepository CRD that would be used with Flux v2
