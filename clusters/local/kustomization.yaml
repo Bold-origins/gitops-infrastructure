@@ -12,10 +12,11 @@ commonAnnotations:
 
 resources:
 - infrastructure/cert-manager
-- infrastructure/sealed-secrets
-- infrastructure/vault
-- infrastructure/gatekeeper
-- apps/example
-- apps/minio
+# Temporarily commenting out other resources until we resolve the namespace issues
+# - infrastructure/sealed-secrets
+# - infrastructure/vault
+# - infrastructure/gatekeeper
+# - apps/example
+# - apps/minio
 
-# Removed the conflicting namespace declaration that was causing issues with Flux 
+# Simplified approach - start with cert-manager only, then add others incrementally 
