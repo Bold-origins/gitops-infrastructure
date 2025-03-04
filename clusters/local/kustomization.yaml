@@ -14,9 +14,9 @@ resources:
 - infrastructure/cert-manager
 - infrastructure/sealed-secrets
 - infrastructure/vault
-# Temporarily commenting out other resources until we resolve the namespace issues
-# - infrastructure/gatekeeper
+- infrastructure/gatekeeper
+# Temporarily commenting out app resources until all infrastructure is working
 # - apps/example
 # - apps/minio
 
-# Adding components incrementally - cert-manager, sealed-secrets, and vault added 
+# Adding components incrementally - infrastructure layer is fully added 
