@@ -1,6 +1,11 @@
 # Values for Sealed Secrets Helm chart
 # Reference: https://github.com/bitnami-labs/sealed-secrets/tree/main/helm/sealed-secrets
 
+# NOTE: There was an issue with the v0.24.5 controller:
+# 1. The --key-label flag caused crashes as it doesn't exist in this version
+# 2. The service account needs to be explicitly set in the deployment
+# These issues are fixed in the release.yaml configuration.
+
 # Use custom name
 fullnameOverride: sealed-secrets
 

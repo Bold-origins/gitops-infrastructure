@@ -7,6 +7,9 @@ kind: HelmRelease
 metadata:
   name: sealed-secrets
   namespace: sealed-secrets
+  annotations:
+    # This will force Flux to restart the deployment and pick up changes
+    reconcile.fluxcd.io/requestedAt: "2025-03-04T09:45:00Z"
 spec:
   interval: 5m
   chart:
@@ -21,9 +24,17 @@ spec:
     # These values would be read from the values.yaml file
     fullnameOverride: sealed-secrets
     namespace: sealed-secrets
+    
+    # Service account configuration - ensuring it's properly set
     serviceAccount:
       create: true
       name: sealed-secrets-controller
+      annotations: {}
+    
+    # Role & Role Bindings to ensure proper permissions
+    rbac:
+      create: true
+    
     secretName: sealed-secrets-key
     resources:
       requests:
@@ -32,11 +43,16 @@ spec:
       limits:
         memory: "128Mi"
         cpu: "100m"
+    
     # Fix for the crashing controller - explicitly override args
     controller:
+      # Ensure no problematic flags are included
       args:
         - --key-prefix=sealed-secrets-key
         - --update-status
+      # Explicitly set the command
+      command:
+        - controller
 
 ---
 # For reference, this is the HelmRepository CRD that would be used with Flux v2
