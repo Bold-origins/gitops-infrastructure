@@ -6,4 +6,5 @@ resources:
   - vault
   - security
   - policy-engine
-  - minio 
+  - minio
+  - supabase 
