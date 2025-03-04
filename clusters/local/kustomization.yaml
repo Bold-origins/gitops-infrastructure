@@ -15,8 +15,8 @@ resources:
 - infrastructure/sealed-secrets
 - infrastructure/vault
 - infrastructure/gatekeeper
-# Temporarily commenting out app resources until all infrastructure is working
-# - apps/example
-# - apps/minio
+# Now that infrastructure is set up, let's enable applications
+- apps/example
+- apps/minio
 
-# Adding components incrementally - infrastructure layer is fully added 
+# Infrastructure layer is fully added, now adding applications 
