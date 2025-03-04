@@ -13,10 +13,10 @@ commonAnnotations:
 resources:
 - infrastructure/cert-manager
 - infrastructure/sealed-secrets
+- infrastructure/vault
 # Temporarily commenting out other resources until we resolve the namespace issues
-# - infrastructure/vault
 # - infrastructure/gatekeeper
 # - apps/example
 # - apps/minio
 
-# Adding components incrementally - cert-manager and sealed-secrets added 
+# Adding components incrementally - cert-manager, sealed-secrets, and vault added 
