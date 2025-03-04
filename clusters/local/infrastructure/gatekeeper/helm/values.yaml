@@ -10,6 +10,15 @@ auditInterval: 30
 # Log level (INFO, DEBUG, WARNING, ERROR, CRITICAL)
 logLevel: INFO
 
+# RBAC configuration - explicitly enable to fix permission issues
+rbac:
+  create: true
+
+# Service account configuration
+serviceAccount:
+  create: true
+  name: "gatekeeper-admin"
+
 # Controller Manager configuration
 controllerManager:
   # Resource limits and requests

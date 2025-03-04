@@ -7,6 +7,9 @@ kind: HelmRelease
 metadata:
   name: gatekeeper
   namespace: gatekeeper-system
+  annotations:
+    # Force reconciliation to pick up the new RBAC settings
+    reconcile.fluxcd.io/requestedAt: "2025-03-04T10:10:00Z"
 spec:
   interval: 5m
   chart:
@@ -22,6 +25,13 @@ spec:
     replicas: 1
     auditInterval: 30
     logLevel: INFO
+    # Explicitly enable RBAC to fix permission issues
+    rbac:
+      create: true
+    # Configure service account
+    serviceAccount:
+      create: true
+      name: "gatekeeper-admin"
     controllerManager:
       resources:
         limits:
