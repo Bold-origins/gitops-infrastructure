@@ -9,38 +9,31 @@ data:
     
     # Secret configuration
     secret:
-      # JWT secret
-      existingSecret: supabase-jwt
-      existingSecretKeys:
-        anonKey: anonKey
-        serviceKey: serviceKey
-        secret: jwtSecret
+      jwt:
+        anonKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiZXhwIjoxOTg3NjM0MDAwfQ.SupbFbSRSOA5Yx7ERcJwJ0UxTZmq_mBVp7VQrLuYgdw
+        serviceKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJzZXJ2aWNlX3JvbGUiLCJleHAiOjE5ODc2MzQwMDB9.rB3yjhBaXrUB2nMCw40kMSZwU5F03H5-0CQ-_7uX-MY
+        secret: your-super-secure-jwt-secret-key-at-least-32-chars
       
-      # Other secrets - using SealedSecrets for improved security
-      existingSmtpSecret: supabase-smtp
-      existingSmtpSecretKeys:
-        username: username
-        password: password
+      # Other secrets
+      smtp:
+        username: your-mail@example.com
+        password: example123456
       
-      existingDashboardSecret: supabase-dashboard
-      existingDashboardSecretKeys:
-        username: username
-        password: password
+      dashboard:
+        username: supabase
+        password: this_password_is_insecure_and_should_be_updated
       
-      existingDbSecret: supabase-db
-      existingDbSecretKeys:
-        username: username
-        password: password
-        database: database
+      db:
+        username: postgres
+        password: example123456
+        database: postgres
       
-      existingAnalyticsSecret: supabase-analytics
-      existingAnalyticsSecretKeys:
-        apiKey: apiKey
+      analytics:
+        apiKey: your-super-secret-and-long-logflare-key
       
-      existingS3Secret: supabase-s3
-      existingS3SecretKeys:
-        keyId: keyId
-        accessKey: accessKey
+      s3:
+        keyId: minioadmin
+        accessKey: minioadmin
 
     # PostgreSQL configuration
     db:
@@ -248,13 +241,6 @@ data:
           path: /health
           port: 4000
         initialDelaySeconds: 3
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
-          memory: 512Mi
 
     # Vector configuration
     vector:
