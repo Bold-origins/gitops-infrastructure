@@ -8,6 +8,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./clusters/vps/observability/observability/loki/base
+  path: ./clusters/vps/production/observability/loki/base
   prune: true
   wait: true 
