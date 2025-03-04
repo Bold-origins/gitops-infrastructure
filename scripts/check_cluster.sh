@@ -27,8 +27,14 @@ kubectl get pods -n sealed-secrets
 echo -e "\n   c. vault:"
 kubectl get pods -n vault
 echo "Vault status:"
-kubectl exec -it -n vault $(kubectl get pod -n vault -l app=vault -o jsonpath='{.items[0].metadata.name}') -- \
-  /bin/sh -c "export VAULT_ADDR=http://127.0.0.1:8200 && vault status" || echo "Failed to get Vault status"
+# Improved Vault status check that doesn't fail if no pods are found
+VAULT_POD=$(kubectl get pod -n vault -l app=vault -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+if [ -n "$VAULT_POD" ]; then
+  kubectl exec -it -n vault $VAULT_POD -- \
+    /bin/sh -c "export VAULT_ADDR=http://127.0.0.1:8200 && vault status" || echo "Failed to get Vault status"
+else
+  echo "No Vault pod found"
+fi
 
 echo -e "\n   d. gatekeeper:"
 kubectl get pods -n gatekeeper-system
@@ -39,6 +45,11 @@ echo "MinIO buckets cannot be directly listed via kubectl, use the MinIO console
 
 echo -e "\n5. Checking Application Components:"
 kubectl get pods -n example
+# Check for the example app's configuration error
+if kubectl get pods -n example | grep -q "CreateContainerConfigError"; then
+  echo "Example app has configuration errors. Checking events:"
+  kubectl get events -n example --field-selector involvedObject.name=$(kubectl get pods -n example -o jsonpath='{.items[0].metadata.name}') --sort-by='.lastTimestamp'
+fi
 
 echo -e "\n6. Checking Storage:"
 kubectl get pv
