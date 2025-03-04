@@ -8,6 +8,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  path: ./clusters/local/observability/opentelemetry/base
+  path: ./clusters/vps/observability/observability/opentelemetry/base
   prune: true
   wait: true 
