@@ -9,31 +9,42 @@ data:
     
     # Secret configuration
     secret:
-      jwt:
-        anonKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwiZXhwIjoxOTg3NjM0MDAwfQ.SupbFbSRSOA5Yx7ERcJwJ0UxTZmq_mBVp7VQrLuYgdw
-        serviceKey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJzZXJ2aWNlX3JvbGUiLCJleHAiOjE5ODc2MzQwMDB9.rB3yjhBaXrUB2nMCw40kMSZwU5F03H5-0CQ-_7uX-MY
-        secret: your-super-secure-jwt-secret-key-at-least-32-chars
+      existingSecret: supabase-jwt
+      existingSecretKeys:
+        anonKey: anonKey
+        serviceKey: serviceKey
+        jwtSecret: jwtSecret
       
-      # Other secrets
+      # Other secrets - these should also be managed via external secrets
       smtp:
-        username: your-mail@example.com
-        password: example123456
+        existingSecret: supabase-smtp
+        existingSecretKeys:
+          username: username
+          password: password
       
       dashboard:
-        username: supabase
-        password: this_password_is_insecure_and_should_be_updated
+        existingSecret: supabase-dashboard
+        existingSecretKeys:
+          username: username
+          password: password
       
       db:
-        username: postgres
-        password: example123456
-        database: postgres
+        existingSecret: supabase-db
+        existingSecretKeys:
+          username: username
+          password: password
+          database: database
       
       analytics:
-        apiKey: your-super-secret-and-long-logflare-key
+        existingSecret: supabase-analytics
+        existingSecretKeys:
+          apiKey: apiKey
       
       s3:
-        keyId: minioadmin
-        accessKey: minioadmin
+        existingSecret: supabase-s3
+        existingSecretKeys:
+          keyId: keyId
+          accessKey: accessKey
 
     # PostgreSQL configuration
     db:
