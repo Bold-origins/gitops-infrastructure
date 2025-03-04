@@ -33,7 +33,7 @@ controller:
     tag: v0.24.5
     pullPolicy: IfNotPresent
   
-  # Command line arguments
+  # Command line arguments - removed --key-label flag which was causing crashes
   command:
     - controller
   args:

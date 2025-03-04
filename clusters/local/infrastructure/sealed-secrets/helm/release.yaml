@@ -32,6 +32,11 @@ spec:
       limits:
         memory: "128Mi"
         cpu: "100m"
+    # Fix for the crashing controller - explicitly override args
+    controller:
+      args:
+        - --key-prefix=sealed-secrets-key
+        - --update-status
 
 ---
 # For reference, this is the HelmRepository CRD that would be used with Flux v2
