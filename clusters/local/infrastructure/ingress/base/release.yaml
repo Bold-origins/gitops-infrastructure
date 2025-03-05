@@ -1,4 +1,4 @@
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: ingress-nginx
@@ -13,15 +13,26 @@ spec:
         kind: HelmRepository
         name: ingress-nginx
         namespace: flux-system
+  install:
+    crds: Skip
   values:
     controller:
       service:
         type: LoadBalancer
       metrics:
-        enabled: true
-        serviceMonitor:
-          enabled: true
+        enabled: false
       resources:
         requests:
           cpu: 100m
-          memory: 128Mi 
+          memory: 128Mi
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: ServiceMonitor
+              name: .*
+            patch: |
+              $patch: delete
+              kind: ServiceMonitor
+              metadata:
+                name: placeholder 
