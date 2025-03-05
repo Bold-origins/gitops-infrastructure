@@ -41,3 +41,7 @@ clusters/local/infrastructure/minio/secret.yaml
 # Supabase secrets
 clusters/local/infrastructure/supabase/secrets/
 values.example.yaml 
+
+# Sensitive backup materials
+sealed-secrets-backup/
+*-backup.yaml 

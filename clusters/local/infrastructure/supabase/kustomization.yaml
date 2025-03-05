@@ -7,7 +7,7 @@ resources:
   - namespace.yaml
   - gitrepository.yaml
   - helmrelease.yaml
-  - values.yaml
+  
   # Using sealed secrets for GitOps
   - sealed-secrets/sealed-analytics-secret.yaml
   - sealed-secrets/sealed-dashboard-secret.yaml
@@ -15,6 +15,22 @@ resources:
   - sealed-secrets/sealed-jwt-secret.yaml
   - sealed-secrets/sealed-s3-secret.yaml
   - sealed-secrets/sealed-smtp-secret.yaml
+  
+  # For local development, comment out the sealed secrets above
+  # and uncomment these lines to use locally generated secrets:
+  # - secrets/analytics-secret.yaml
+  # - secrets/dashboard-secret.yaml
+  # - secrets/db-secret.yaml
+  # - secrets/jwt-secret.yaml
+  # - secrets/s3-secret.yaml
+  # - secrets/smtp-secret.yaml
+
+# Generate ConfigMap from values.yaml file
+configMapGenerator:
+- name: supabase-values
+  namespace: supabase
+  files:
+  - values.yaml=helm/values.yaml
 
 labels:
   - pairs:
