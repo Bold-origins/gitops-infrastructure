@@ -23,4 +23,6 @@ resources:
 # MinIO moved to infrastructure directory
 # - apps/minio
 
-# Infrastructure layer is fully added, now adding applications 
+# Infrastructure layer is fully added, now adding applications
+- infrastructure/ingress
+- infrastructure/metallb 
