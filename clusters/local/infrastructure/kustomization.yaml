@@ -6,7 +6,7 @@ resources:
   # Disabled problematic components
   - vault
   - security
-  # - policy-engine
+  - policy-engine
   - minio
   # - supabase
   # - cert-manager
