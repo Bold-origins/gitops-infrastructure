@@ -4,11 +4,11 @@ resources:
   - ingress
   - metallb
   # Disabled problematic components
-  # - vault
+  - vault
   # - security
   # - policy-engine
-  # - minio
+  - minio
   # - supabase
   # - cert-manager
   # - gatekeeper
-  # - sealed-secrets 
+  - sealed-secrets 
