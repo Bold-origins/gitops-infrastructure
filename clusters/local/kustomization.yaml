@@ -29,4 +29,5 @@ resources:
 # Adding observability stack
 - observability/grafana
 - observability/prometheus
-- observability/loki 
+# Temporarily commenting out loki until we fix the duplicate HelmRepository issue
+# - observability/loki 
