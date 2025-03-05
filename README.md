@@ -2,6 +2,26 @@
 
 A comprehensive GitOps infrastructure setup for Kubernetes clusters, focusing on security, secrets management, and policy enforcement. This repository contains configuration files and documentation to set up a complete infrastructure with cert-manager, Vault, Sealed Secrets, and OPA Gatekeeper.
 
+## Repository Structure
+
+This repository is organized as follows:
+
+- **charts/** - Helm charts for deploying components
+- **clusters/** - Cluster-specific configurations
+- **diagnostics/** - Diagnostic tools and outputs
+- **docs/** - Documentation organized by category
+  - See [docs/README.md](docs/README.md) for details
+- **plan/** - Planning documents and roadmaps
+- **scripts/** - Operational scripts organized by function
+  - See [scripts/README.md](scripts/README.md) for details
+- **tmp/** - Temporary files (gitignored)
+
+## Getting Started
+
+Please refer to [docs/guides/setup-guide.md](docs/guides/setup-guide.md) for detailed setup instructions.
+
+For local development using Minikube, see [docs/guides/minikube-setup.md](docs/guides/minikube-setup.md).
+
 ## Architecture
 
 This infrastructure follows GitOps principles, with all configurations stored as code in this repository. The key components are:
