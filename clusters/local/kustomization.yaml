@@ -29,5 +29,6 @@ resources:
 # Adding observability stack
 - observability/grafana
 - observability/prometheus
+- monitoring-kustomization.yaml
 # Temporarily commenting out loki until we fix the duplicate HelmRepository issue
 # - observability/loki 
