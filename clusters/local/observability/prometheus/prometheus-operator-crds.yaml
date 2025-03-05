@@ -1,0 +1,29 @@
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: prometheus-operator
+  namespace: flux-system
+spec:
+  interval: 30m
+  url: https://github.com/prometheus-operator/prometheus-operator.git
+  ref:
+    tag: v0.69.1
+  ignore: |
+    # exclude all
+    /*
+    # include deploy/crds dir
+    !/example/prometheus-operator-crd
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: prometheus-operator-crds
+  namespace: flux-system
+spec:
+  interval: 1h
+  prune: false
+  sourceRef:
+    kind: GitRepository
+    name: prometheus-operator
+  path: ./example/prometheus-operator-crd
+  timeout: 2m 
