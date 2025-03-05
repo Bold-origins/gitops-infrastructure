@@ -9,6 +9,7 @@ spec:
         kind: K8sRequiredLabels
       validation:
         openAPIV3Schema:
+          type: object
           properties:
             labels:
               type: array

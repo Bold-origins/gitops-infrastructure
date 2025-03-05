@@ -9,6 +9,7 @@ spec:
         kind: K8sAllowedRepos
       validation:
         openAPIV3Schema:
+          type: object
           properties:
             repos:
               type: array
