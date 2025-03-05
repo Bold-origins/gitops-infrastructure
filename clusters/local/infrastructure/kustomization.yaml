@@ -10,5 +10,5 @@ resources:
   - minio
   # - supabase
   - cert-manager
-  # - gatekeeper
+  - gatekeeper
   - sealed-secrets 
