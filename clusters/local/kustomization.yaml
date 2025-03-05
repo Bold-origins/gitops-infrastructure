@@ -16,8 +16,7 @@ resources:
 - infrastructure/vault
 - infrastructure/gatekeeper
 - infrastructure/minio
-# Temporarily commenting out supabase due to secrets directory issues
-# - infrastructure/supabase
+- infrastructure/supabase
 # Now that infrastructure is set up, let's enable applications
 # Temporarily excluding example app due to label conflict with existing deployment
 # - apps/example
