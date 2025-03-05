@@ -15,16 +15,28 @@ spec:
         namespace: flux-system
   install:
     crds: Skip
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
   values:
     controller:
       service:
         type: LoadBalancer
       metrics:
         enabled: false
+        serviceMonitor:
+          enabled: false
+          additionalLabels: {}
       resources:
         requests:
           cpu: 100m
           memory: 128Mi
+    defaultBackend:
+      enabled: false
+    serviceMonitor:
+      enabled: false
   postRenderers:
     - kustomize:
         patches:
