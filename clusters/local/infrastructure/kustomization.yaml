@@ -3,9 +3,12 @@ kind: Kustomization
 resources:
   - ingress
   - metallb
-  # Temporarily disabled problematic components
+  # Disabled problematic components
   # - vault
   # - security
   # - policy-engine
   # - minio
-  # - supabase 
+  # - supabase
+  # - cert-manager
+  # - gatekeeper
+  # - sealed-secrets 
