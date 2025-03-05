@@ -3,6 +3,10 @@ kind: HelmRelease
 metadata:
   name: supabase
   namespace: supabase
+  labels:
+    app: supabase
+    environment: local
+    team: infrastructure
 spec:
   interval: 30m
   chart:
