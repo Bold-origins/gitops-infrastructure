@@ -8,8 +8,13 @@ resources:
   - gitrepository.yaml
   - helmrelease.yaml
   - values.yaml
-  # Using patched secrets for local development
-  - secrets/
+  # Using sealed secrets for GitOps
+  - sealed-secrets/sealed-analytics-secret.yaml
+  - sealed-secrets/sealed-dashboard-secret.yaml
+  - sealed-secrets/sealed-db-secret.yaml
+  - sealed-secrets/sealed-jwt-secret.yaml
+  - sealed-secrets/sealed-s3-secret.yaml
+  - sealed-secrets/sealed-smtp-secret.yaml
 
 labels:
   - pairs:
