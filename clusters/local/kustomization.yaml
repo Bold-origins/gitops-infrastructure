@@ -13,8 +13,7 @@ commonAnnotations:
 resources:
 - infrastructure/cert-manager
 - infrastructure/sealed-secrets
-# Temporarily commenting out vault to troubleshoot
-# - infrastructure/vault
+- infrastructure/vault
 - infrastructure/gatekeeper
 - infrastructure/minio
 # Temporarily commenting out supabase due to secrets directory issues
