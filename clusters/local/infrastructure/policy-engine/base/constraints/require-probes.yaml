@@ -1,5 +1,5 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
-kind: K8sRequiredProbes
+kind: K8sRequireProbes
 metadata:
   name: require-health-probes
 spec:
@@ -13,4 +13,4 @@ spec:
       - flux-system
       - gatekeeper-system
   parameters:
-    probes: ["readinessProbe", "livenessProbe"] 
+    probeTypes: ["readinessProbe", "livenessProbe"] 
