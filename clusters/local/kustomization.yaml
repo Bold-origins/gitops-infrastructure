@@ -25,4 +25,8 @@ resources:
 
 # Infrastructure layer is fully added, now adding applications
 - infrastructure/ingress
-- infrastructure/metallb 
+- infrastructure/metallb
+# Adding observability stack
+- observability/grafana
+- observability/prometheus
+- observability/loki 
