@@ -5,7 +5,7 @@ resources:
   - metallb
   # Disabled problematic components
   - vault
-  # - security
+  - security
   # - policy-engine
   - minio
   # - supabase
