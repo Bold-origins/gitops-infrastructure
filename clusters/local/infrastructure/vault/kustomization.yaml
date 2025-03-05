@@ -6,8 +6,9 @@ namespace: vault
 resources:
 - namespace.yaml
 - ingress.yaml
-# Reference to Helm-based resources
+# Use explicit file paths instead of directories
 - helm/release.yaml
+- helm/repository.yaml
 
 # Import values from the values file
 configMapGenerator:

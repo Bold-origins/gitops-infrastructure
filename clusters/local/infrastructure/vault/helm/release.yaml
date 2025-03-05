@@ -1,4 +1,3 @@
-you---
 # This is a HelmRelease Custom Resource Definition
 # In a GitOps setup with Flux or ArgoCD, this would be managed by the GitOps controller
 # For manual implementation, you would use: helm template hashicorp/vault --values values.yaml | kubectl apply -f -
@@ -47,15 +46,4 @@ spec:
       image:
         repository: hashicorp/vault
         tag: "1.15.2"
-        pullPolicy: IfNotPresent
-
----
-# For reference, this is the HelmRepository CRD that would be used with Flux v2
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: hashicorp
-  namespace: flux-system
-spec:
-  interval: 1h
-  url: https://helm.releases.hashicorp.com 
+        pullPolicy: IfNotPresent 
