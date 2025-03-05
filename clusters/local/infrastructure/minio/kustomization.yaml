@@ -5,7 +5,7 @@ namespace: minio
 
 resources:
 - base/namespace.yaml
-- sealed-secrets/minio-credentials-sealed.yaml
+- secret.yaml
 - helm/release.yaml
 
 # Import values from the values file
