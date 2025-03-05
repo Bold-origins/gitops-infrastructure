@@ -3,4 +3,5 @@ kind: Kustomization
 namespace: observability
 resources:
   - namespace.yaml
-  - release.yaml 
+  - release.yaml
+  - flux-network-dashboard.yaml 

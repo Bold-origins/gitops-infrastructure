@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-system
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: source-controller
+  namespaceSelector:
+    matchNames:
+      - flux-system
+  endpoints:
+    - port: http
+      interval: 30s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-notification
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: notification-controller
+  namespaceSelector:
+    matchNames:
+      - flux-system
+  endpoints:
+    - port: http
+      interval: 30s 

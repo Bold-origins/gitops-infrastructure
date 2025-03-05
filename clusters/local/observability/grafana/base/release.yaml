@@ -37,6 +37,11 @@ spec:
           editable: true
           options:
             path: /var/lib/grafana/dashboards/default
+    sidecar:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard
+        searchNamespace: ALL
     datasources:
       datasources.yaml:
         apiVersion: 1
