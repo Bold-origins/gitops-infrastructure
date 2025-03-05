@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    kubernetes.io/metadata.name: monitoring
+    pod-security.kubernetes.io/enforce: privileged
+    # Add label for NetworkPolicy selection
+    app.kubernetes.io/part-of: monitoring 
