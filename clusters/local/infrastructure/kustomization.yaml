@@ -9,6 +9,6 @@ resources:
   - policy-engine
   - minio
   # - supabase
-  # - cert-manager
+  - cert-manager
   # - gatekeeper
   - sealed-secrets 
