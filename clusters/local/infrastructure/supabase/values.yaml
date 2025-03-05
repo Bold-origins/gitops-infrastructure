@@ -34,6 +34,7 @@ data:
           username: username
           password: password
           database: database
+          password_encoded: password_encoded
       
       analytics:
         existingSecret: supabase-analytics
@@ -65,10 +66,10 @@ data:
       resources:
         limits:
           cpu: 500m
-          memory: 1Gi
+          memory: 800Mi
         requests:
           cpu: 100m
-          memory: 512Mi
+          memory: 400Mi
 
     # Studio configuration
     studio:
@@ -87,11 +88,11 @@ data:
         initialDelaySeconds: 3
       resources:
         limits:
-          cpu: 250m
-          memory: 512Mi
+          cpu: 200m
+          memory: 400Mi
         requests:
           cpu: 50m
-          memory: 256Mi
+          memory: 200Mi
 
     # Auth configuration
     auth:
@@ -109,11 +110,11 @@ data:
         GOTRUE_SMTP_SENDER_NAME: "your-mail@example.com"
       resources:
         limits:
-          cpu: 250m
-          memory: 512Mi
+          cpu: 200m
+          memory: 400Mi
         requests:
           cpu: 50m
-          memory: 256Mi
+          memory: 200Mi
 
     # REST API configuration
     rest:
@@ -122,11 +123,11 @@ data:
         tag: v12.0.1
       resources:
         limits:
-          cpu: 250m
-          memory: 512Mi
+          cpu: 200m
+          memory: 400Mi
         requests:
           cpu: 50m
-          memory: 256Mi
+          memory: 200Mi
 
     # Realtime configuration
     realtime:
@@ -236,64 +237,24 @@ data:
                 pathType: Prefix
       resources:
         limits:
-          cpu: 250m
-          memory: 512Mi
+          cpu: 200m
+          memory: 400Mi
         requests:
           cpu: 50m
-          memory: 256Mi
+          memory: 200Mi
 
     # Analytics configuration
     analytics:
       enabled: false
-      image:
-        tag: 1.4.0
-      livenessProbe:
-        httpGet:
-          path: /health
-          port: 4000
-        initialDelaySeconds: 3
 
     # Vector configuration
     vector:
       enabled: false
-      image:
-        tag: 0.34.0-alpine
-      livenessProbe:
-        httpGet:
-          path: /health
-          port: 9001
-        initialDelaySeconds: 3
-      ## Vector requires logs from the control plane to function.
-      ## This is normally stored in /var/log/pods
-      ## Modify these values according to your environment.
-      volumeMounts:
-        - name: pod-logs
-          mountPath: /var/log/pods
-      volumes:
-        - name: pod-logs
-          hostPath:
-            path: /var/log/pods
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
-          memory: 512Mi
 
     # Functions configuration
     functions:
       enabled: false
-      image:
-        tag: v1.41.2
-      resources:
-        limits:
-          cpu: 500m
-          memory: 1Gi
-        requests:
-          cpu: 100m
-          memory: 512Mi
-    
+
     # Disable MinIO since we're using the external MinIO deployment
     minio:
       enabled: false

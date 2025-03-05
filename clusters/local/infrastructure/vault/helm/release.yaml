@@ -1,4 +1,4 @@
----
+you---
 # This is a HelmRelease Custom Resource Definition
 # In a GitOps setup with Flux or ArgoCD, this would be managed by the GitOps controller
 # For manual implementation, you would use: helm template hashicorp/vault --values values.yaml | kubectl apply -f -

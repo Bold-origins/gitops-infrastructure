@@ -8,6 +8,7 @@ resources:
   - gitrepository.yaml
   - helmrelease.yaml
   - values.yaml
+  # Using patched secrets for local development
   - secrets/
 
 labels:
