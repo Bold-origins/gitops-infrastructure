@@ -12,10 +12,19 @@ spec:
       - kube-system
       - flux-system
       - gatekeeper-system
+      - supabase
   parameters:
     repos:
       - "docker.io/library/"
       - "k8s.gcr.io/"
       - "gcr.io/"
       - "quay.io/"
-      - "ghcr.io/" 
+      - "ghcr.io/"
+      - "supabase/"
+      - "postgres:"
+      - "docker.io/supabase/"
+      - "docker.io/grafana/"
+      - "hashicorp/"
+      - "registry.k8s.io/"
+      - "docker.io/kubernetesui/"
+      - "grafana/" 
