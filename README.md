@@ -1,186 +1,199 @@
-# Local Kubernetes Cluster
+# Cluster GitOps Framework
 
-A complete GitOps-based local Kubernetes environment with pre-configured infrastructure components, monitoring, and observability. This repo provides everything you need to run a production-like Kubernetes environment locally for development and testing.
+A comprehensive GitOps-based framework for managing Kubernetes clusters across **local development**, **staging**, and **production** environments.
 
-## Features
+## 🚀 Overview
 
-- **Complete Infrastructure Stack**: Includes essential components like cert-manager, Sealed Secrets, Vault, and OPA Gatekeeper
-- **Monitoring & Observability**: Pre-configured Prometheus, Grafana, and alerting
-- **GitOps Ready**: Structured for declarative configuration management
-- **Security First**: Built with security best practices including policy enforcement
-- **Easy Setup**: Simple scripts to get you running quickly
+This repository utilizes **GitOps** to maintain consistency across environments, enabling clear promotion paths for changes. The framework includes:
 
-## Prerequisites
+- Multi-environment configurations (Local, Staging, Production)
+- Infrastructure-as-Code for Kubernetes components
+- Automated deployment workflows
+- Monitoring, observability, and security best practices (Sealed Secrets, Vault, OPA Gatekeeper)
 
-- [Minikube](https://minikube.sigs.k8s.io/docs/start/) v1.30+
-- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) v1.28+
-- [Helm](https://helm.sh/docs/intro/install/) v3.12+
-- [kubeseal](https://github.com/bitnami-labs/sealed-secrets#installation)
-- [Vault CLI](https://developer.hashicorp.com/vault/downloads) (optional)
-- At least 4GB of available memory and 2 CPUs for Minikube
+The **Local Kubernetes Cluster** provides developers with an environment closely resembling production, including infrastructure and observability tools, directly on their machines.
 
-## Quick Start
-
-1. **Clone this repository**
-   ```bash
-   git clone https://github.com/yourusername/cluster.git
-   cd cluster
-   ```
-
-2. **Set up your local Minikube cluster**
-   ```bash
-   ./scripts/setup-minikube.sh
-   ```
-   This script will:
-   - Start Minikube with appropriate resources
-   - Enable necessary addons
-   - Configure local domain mappings
-   - Deploy core infrastructure components
-
-3. **Verify the environment**
-   ```bash
-   ./scripts/verify-environment.sh
-   ```
-
-4. **Access the web interfaces**
-   Visit the following URLs in your browser:
-   - Vault: https://vault.local
-   - Prometheus: https://prometheus.local
-   - Grafana: https://grafana.local
-   - MinIO: https://minio.local
-   - Alertmanager: https://alertmanager.local
-
-   Note: You'll need to accept the self-signed certificate warnings
-
-## Architecture
-
-This local cluster implements a multi-tier architecture:
-
-- **Infrastructure Layer**: Core components that provide platform capabilities
-  - cert-manager: Certificate management
-  - Sealed Secrets: Secret encryption
-  - Vault: Secrets management
-  - OPA Gatekeeper: Policy enforcement
-  
-- **Monitoring Layer**: Observability and alerting
-  - Prometheus: Metrics collection and alerting
-  - Grafana: Visualization and dashboards
-  - Alertmanager: Alert routing
-  
-- **Applications Layer**: Example applications showing how to use the infrastructure
-
-## Directory Structure
+## 🏗️ Repository Structure
 
 ```
-.
-├── charts/                      # Helm charts
-├── clusters/                    # Cluster configurations
-│   ├── local/                   # Local development cluster
-│   │   ├── flux-system/         # Flux GitOps configuration
-│   │   ├── infrastructure/      # Core infrastructure components
-│   │   ├── monitoring/          # Monitoring stack
-│   │   ├── observability/       # Observability tools
-│   │   └── policies/            # OPA Gatekeeper policies
-│   └── vps/                     # VPS deployment configuration
-├── diagnostics/                 # Diagnostic tools and outputs
-├── docs/                        # Documentation
-│   ├── architecture/            # Architecture diagrams and details
-│   ├── guides/                  # Setup and usage guides
-│   │   ├── minikube-setup.md    # Minikube setup guide
-│   │   ├── setup-guide.md       # Complete setup guide
-│   │   └── verification-guide.md # Verification procedures
-│   ├── reference/               # Reference documentation
-│   ├── security/                # Security documentation
-│   └── troubleshooting/         # Troubleshooting guides
-├── scripts/                     # Utility scripts
-│   ├── cluster-management/      # Cluster management scripts
-│   ├── connectivity/            # Network and connectivity scripts
-│   ├── diagnostics/             # Diagnostic scripts
-│   ├── setup-minikube.sh        # Minikube setup script
-│   └── verify-environment.sh    # Environment verification script
-└── sealed-secrets-backup/       # Backup location for sealed secrets
+clusters/               # Kubernetes manifests
+├── local/              # Local environment overlays
+├── staging/            # Staging overlays (planned)
+├── production/         # Production overlays (planned)
+├── base/               # Shared base configurations (planned)
+
+charts/                 # Helm charts
+└── example-app/        # Example application chart
+
+scripts/                # Automation scripts
+├── cluster-management/ # Cluster management tools
+├── connectivity/       # Port-forwarding and connectivity scripts
+├── diagnostics/        # Troubleshooting scripts
+├── setup-minikube.sh   # Local setup script
+├── verify-environment.sh # Environment validation
+└── README.md           # Scripts documentation
+
+conext/                 # Project documentation
+├── APP_FLOW_DOCUMENT.md      # User journeys
+├── PROGRESS_DOCUMENT.md      # Status and roadmap
+├── PROJECT_REQUIREMENTS_DOCUMENT.md # Requirements
+└── TECH_STACK_DOCUMENT.md    # Technical stack
+
+.env                    # Environment variables
 ```
 
-## Component Details
+## 🛠️ Prerequisites
 
-### Core Infrastructure
+- [Docker](https://docs.docker.com/get-docker/)
+- [Minikube](https://minikube.sigs.k8s.io/docs/start/) **v1.30+**
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) **v1.28+**
+- [Helm](https://helm.sh/docs/intro/install/) **v3.12+**
+- [Flux CLI](https://fluxcd.io/docs/installation/)
 
-- **cert-manager**: Automates certificate management within the cluster
-- **Sealed Secrets**: Allows storing encrypted secrets in Git
-- **Vault**: Advanced secrets management and dynamic credentials
-- **OPA Gatekeeper**: Policy-based control and security guardrails
+### System Requirements
 
-### Monitoring & Observability
+- **Minimum**: 4GB RAM, 2 CPUs, 20GB disk space
+- **Recommended**: 8GB RAM, 4 CPUs, 40GB SSD
 
-- **Prometheus**: Metrics collection, storage, and alerting
-- **Grafana**: Data visualization with pre-configured dashboards
-- **Alertmanager**: Alert management and notification routing
+## 🚀 Getting Started
 
-## Common Tasks
-
-### Reset Vault
-
-If you need to reset Vault to its initial state:
+### 1. Clone the Repository
 
 ```bash
-./scripts/reset_vault.sh
+git clone https://github.com/yourusername/cluster.git
+cd cluster
 ```
 
-### Check Cluster Health
-
-Run a comprehensive check of the cluster:
+### 2. Set Up Minikube Environment
 
 ```bash
-./scripts/check_cluster.sh
+chmod +x scripts/setup-minikube.sh
+./scripts/setup-minikube.sh
 ```
 
-### Setup Observability
+Customize resources by editing the script if needed.
 
-Deploy or update the observability stack:
+### 3. Verify Environment
 
 ```bash
-./scripts/setup-observability.sh
+chmod +x scripts/verify-environment.sh
+./scripts/verify-environment.sh
 ```
 
-## Accessing Web Interfaces
+Ensures Minikube and key resources are properly configured.
 
-See [docs/guides/UI-ACCESS-README.md](docs/guides/UI-ACCESS-README.md) for detailed information on accessing the web interfaces for different components.
+### 4. Bootstrap Flux (Optional)
 
-## Troubleshooting
+```bash
+flux bootstrap github \
+  --owner=yourusername \
+  --repository=cluster \
+  --branch=main \
+  --path=clusters/local
+```
 
-If you encounter issues, check the following:
+Update parameters (`--owner`, `--repository`, `--branch`) as necessary.
 
-1. **Check pod status**:
-   ```bash
-   kubectl get pods --all-namespaces
-   ```
+### 5. Access Local Services
 
-2. **View logs for a specific component**:
-   ```bash
-   kubectl logs -n <namespace> <pod-name>
-   ```
+Forward local cluster services:
 
-3. **Restart Minikube if needed**:
-   ```bash
-   minikube stop
-   minikube start
-   ```
+```bash
+./scripts/connectivity/port-forward.sh
+```
 
-4. **Consult troubleshooting guides**:
-   See [docs/troubleshooting/](docs/troubleshooting/) for specific component issues.
+## 🌐 Accessing Web Interfaces
 
-## Extending the Cluster
+- **Kubernetes Dashboard**: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/
+- **Vault**: https://vault.local
+- **Prometheus**: https://prometheus.local
+- **Grafana**: https://grafana.local
+- **MinIO**: https://minio.local
+- **Alertmanager**: https://alertmanager.local
 
-The cluster is designed to be extensible. To add a new component:
+> **Note**: For `.local` addresses, add entries to `/etc/hosts` or configure local DNS.
 
-1. Create a directory under the appropriate section in `clusters/local/`
-2. Add your Kubernetes manifests or Kustomize configurations
-3. Update the main `kustomization.yaml` to include your new component
+## 🌐 Environment Architecture
 
-## Contributing
+| Environment            | Purpose                              | Infrastructure             | Domain Pattern          |
+| ---------------------- | ------------------------------------ | -------------------------- | ----------------------- |
+| Local                  | Feature development & testing        | Minikube                   | `*.local`               |
+| Staging _(Planned)_    | Integration & pre-production testing | K3s on VPS                 | `*.staging.example.com` |
+| Production _(Planned)_ | Live environment for end users       | Kubernetes on VPS or cloud | `*.example.com`         |
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 🔄 Development Workflow
 
-## License
+1. **Local Development**: Develop and test locally, validate with `verify-environment.sh`.
+2. **Code Review**: PR to `develop`, automated tests, and review.
+3. **Staging**: Automated deployment to staging upon merging to `develop`.
+4. **Production**: Final testing, then merge to `main` for production deployment.
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+## 🚦 Project Status
+
+**Current Status**: **Development Phase**
+
+### Completed
+
+- Core Infrastructure (Minikube, Vault, OPA Gatekeeper, Ingress-Nginx, MetalLB, MinIO)
+- Monitoring & Observability (Prometheus, Grafana, Alertmanager, Loki, Basic OpenTelemetry)
+- Automation Scripts (`setup-minikube.sh`, `verify-environment.sh`, Vault management)
+
+### In-Progress & Planned
+
+- Supabase integration
+- Enhanced OPA policies
+- Advanced observability dashboards
+- CI/CD integration
+
+## 🔧 Utility Scripts
+
+- **setup-minikube.sh**: Configure Minikube.
+- **verify-environment.sh**: Validate setup.
+- **check_cluster.sh**: Diagnose cluster issues.
+- **Vault scripts**: Manage Vault setup/reset.
+
+Detailed instructions in [`scripts/README.md`](scripts/README.md).
+
+## 🔐 Security
+
+- **Sealed Secrets**: Encrypt secrets in Git.
+- **HashiCorp Vault**: Advanced secret management.
+- **OPA Gatekeeper**: Policy enforcement.
+- **RBAC**: Granular Kubernetes permissions.
+
+## 📊 Monitoring & Observability
+
+- **Prometheus**: Metrics and alerts.
+- **Grafana**: Visual dashboards.
+- **Alertmanager**: Alert routing.
+- **Loki**: Centralized logging.
+- **OpenTelemetry**: Distributed tracing.
+
+## 📚 Additional Documentation
+
+- [Deployment_Workflow_Plan.md](Deployment_Workflow_Plan.md)
+- [APP_FLOW_DOCUMENT.md](conext/APP_FLOW_DOCUMENT.md)
+- [PROGRESS_DOCUMENT.md](conext/PROGRESS_DOCUMENT.md)
+- [PROJECT_REQUIREMENTS_DOCUMENT.md](conext/PROJECT_REQUIREMENTS_DOCUMENT.md)
+- [TECH_STACK_DOCUMENT.md](conext/TECH_STACK_DOCUMENT.md)
+
+## 🤝 Contributing
+
+1. **Fork** the repo.
+2. Create a **feature branch** (`feature/your-feature`).
+3. Commit and push changes.
+4. Open a PR against `develop`.
+
+## 📄 License
+
+Licensed under **MIT License**. See [LICENSE](LICENSE).
+
+## 🔍 Troubleshooting
+
+- **Minikube not starting**: Check Docker or Hypervisor settings.
+- **Flux not reconciling**: Run `flux reconcile`.
+- **Logs**: Use `kubectl logs -n <namespace> <pod>` or Loki interface.
+
+---
+
+Feel free to adapt these improvements to best suit your project's specifics!
