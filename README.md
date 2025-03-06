@@ -1,172 +1,181 @@
-# Kubernetes GitOps Infrastructure
+# Local Kubernetes Cluster
 
-A comprehensive GitOps infrastructure setup for Kubernetes clusters, focusing on security, secrets management, and policy enforcement. This repository contains configuration files and documentation to set up a complete infrastructure with cert-manager, Vault, Sealed Secrets, and OPA Gatekeeper.
+A complete GitOps-based local Kubernetes environment with pre-configured infrastructure components, monitoring, and observability. This repo provides everything you need to run a production-like Kubernetes environment locally for development and testing.
 
-## Repository Structure
+## Features
 
-This repository is organized as follows:
+- **Complete Infrastructure Stack**: Includes essential components like cert-manager, Sealed Secrets, Vault, and OPA Gatekeeper
+- **Monitoring & Observability**: Pre-configured Prometheus, Grafana, and alerting
+- **GitOps Ready**: Structured for declarative configuration management
+- **Security First**: Built with security best practices including policy enforcement
+- **Easy Setup**: Simple scripts to get you running quickly
 
-- **charts/** - Helm charts for deploying components
-- **clusters/** - Cluster-specific configurations
-- **diagnostics/** - Diagnostic tools and outputs
-- **docs/** - Documentation organized by category
-  - See [docs/README.md](docs/README.md) for details
-- **plan/** - Planning documents and roadmaps
-- **scripts/** - Operational scripts organized by function
-  - See [scripts/README.md](scripts/README.md) for details
-- **tmp/** - Temporary files (gitignored)
+## Prerequisites
 
-## Getting Started
+- [Minikube](https://minikube.sigs.k8s.io/docs/start/) v1.30+
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) v1.28+
+- [Helm](https://helm.sh/docs/intro/install/) v3.12+
+- [kubeseal](https://github.com/bitnami-labs/sealed-secrets#installation)
+- [Vault CLI](https://developer.hashicorp.com/vault/downloads) (optional)
+- At least 4GB of available memory and 2 CPUs for Minikube
 
-Please refer to [docs/guides/setup-guide.md](docs/guides/setup-guide.md) for detailed setup instructions.
+## Quick Start
 
-For local development using Minikube, see [docs/guides/minikube-setup.md](docs/guides/minikube-setup.md).
+1. **Clone this repository**
+   ```bash
+   git clone https://github.com/yourusername/cluster.git
+   cd cluster
+   ```
+
+2. **Set up your local Minikube cluster**
+   ```bash
+   ./scripts/setup-minikube.sh
+   ```
+   This script will:
+   - Start Minikube with appropriate resources
+   - Enable necessary addons
+   - Configure local domain mappings
+   - Deploy core infrastructure components
+
+3. **Verify the environment**
+   ```bash
+   ./scripts/verify-environment.sh
+   ```
+
+4. **Access the web interfaces**
+   Visit the following URLs in your browser:
+   - Vault: https://vault.local
+   - Prometheus: https://prometheus.local
+   - Grafana: https://grafana.local
+   - MinIO: https://minio.local
+   - Alertmanager: https://alertmanager.local
+
+   Note: You'll need to accept the self-signed certificate warnings
 
 ## Architecture
 
-This infrastructure follows GitOps principles, with all configurations stored as code in this repository. The key components are:
+This local cluster implements a multi-tier architecture:
 
-- **cert-manager**: For TLS certificate management, including Let's Encrypt integration
-- **HashiCorp Vault**: For secrets management and dynamic credentials
-- **Sealed Secrets**: For storing encrypted secrets in Git
-- **OPA Gatekeeper**: For policy enforcement and security guardrails
-- **MinIO**: For S3-compatible object storage
-- **Example Application**: Demonstrates how to use Vault and Sealed Secrets in a real application
-
-The infrastructure is organized using Kustomize, allowing for environment-specific configurations while maintaining a common base.
+- **Infrastructure Layer**: Core components that provide platform capabilities
+  - cert-manager: Certificate management
+  - Sealed Secrets: Secret encryption
+  - Vault: Secrets management
+  - OPA Gatekeeper: Policy enforcement
+  
+- **Monitoring Layer**: Observability and alerting
+  - Prometheus: Metrics collection and alerting
+  - Grafana: Visualization and dashboards
+  - Alertmanager: Alert routing
+  
+- **Applications Layer**: Example applications showing how to use the infrastructure
 
 ## Directory Structure
 
 ```
 .
-├── clusters/
-│   └── local/                      # Local development cluster
-│       ├── apps/                   # Application deployments
-│       │   ├── example/            # Example application using Vault and Sealed Secrets
-│       │   └── minio/              # MinIO object storage
-│       ├── infrastructure/         # Core infrastructure components
-│       │   ├── cert-manager/       # TLS certificate management
-│       │   ├── gatekeeper/         # Policy enforcement
-│       │   ├── sealed-secrets/     # Encrypted secrets
-│       │   └── vault/              # Secret management
-│       └── kustomization.yaml      # Main kustomization file
-├── docs/                           # Documentation
-│   ├── setup-guide.md              # Complete setup guide
-│   └── verification-guide.md       # Guide for verifying the installation
-└── scripts/                        # Utility scripts
-    ├── setup-minikube.sh           # Script to configure Minikube
-    └── verify-environment.sh       # Script to verify the environment
+├── charts/                      # Helm charts
+├── clusters/                    # Cluster configurations
+│   ├── local/                   # Local development cluster
+│   │   ├── flux-system/         # Flux GitOps configuration
+│   │   ├── infrastructure/      # Core infrastructure components
+│   │   ├── monitoring/          # Monitoring stack
+│   │   ├── observability/       # Observability tools
+│   │   └── policies/            # OPA Gatekeeper policies
+│   └── vps/                     # VPS deployment configuration
+├── diagnostics/                 # Diagnostic tools and outputs
+├── docs/                        # Documentation
+│   ├── architecture/            # Architecture diagrams and details
+│   ├── guides/                  # Setup and usage guides
+│   │   ├── minikube-setup.md    # Minikube setup guide
+│   │   ├── setup-guide.md       # Complete setup guide
+│   │   └── verification-guide.md # Verification procedures
+│   ├── reference/               # Reference documentation
+│   ├── security/                # Security documentation
+│   └── troubleshooting/         # Troubleshooting guides
+├── scripts/                     # Utility scripts
+│   ├── cluster-management/      # Cluster management scripts
+│   ├── connectivity/            # Network and connectivity scripts
+│   ├── diagnostics/             # Diagnostic scripts
+│   ├── setup-minikube.sh        # Minikube setup script
+│   └── verify-environment.sh    # Environment verification script
+└── sealed-secrets-backup/       # Backup location for sealed secrets
 ```
 
-## Prerequisites
+## Component Details
 
-- Minikube v1.30+ or equivalent Kubernetes environment
-- kubectl v1.28+
-- helm v3.12+
-- kubeseal CLI (for Sealed Secrets)
-- Vault CLI (optional, for Vault operations)
+### Core Infrastructure
 
-## Quick Start
+- **cert-manager**: Automates certificate management within the cluster
+- **Sealed Secrets**: Allows storing encrypted secrets in Git
+- **Vault**: Advanced secrets management and dynamic credentials
+- **OPA Gatekeeper**: Policy-based control and security guardrails
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/yourusername/gitops-infra.git
-   cd gitops-infra
-   ```
+### Monitoring & Observability
 
-2. Set up your local development environment:
-   ```bash
-   ./scripts/setup-minikube.sh
-   ```
+- **Prometheus**: Metrics collection, storage, and alerting
+- **Grafana**: Data visualization with pre-configured dashboards
+- **Alertmanager**: Alert management and notification routing
 
-3. Apply the infrastructure:
-   ```bash
-   kubectl apply -k clusters/local
-   ```
+## Common Tasks
 
-4. Verify the installation:
-   ```bash
-   ./scripts/verify-environment.sh
-   ```
+### Reset Vault
 
-5. Access the example application:
-   - Add `example.local` to your /etc/hosts file: `echo "$(minikube ip) example.local" | sudo tee -a /etc/hosts`
-   - Visit https://example.local in your browser
-
-## Detailed Setup
-
-For a comprehensive setup guide, see [docs/setup-guide.md](docs/setup-guide.md).
-
-## Infrastructure Components
-
-### cert-manager
-
-cert-manager is used for automated certificate management. It's configured with:
-
-- Self-signed issuer for local development
-- Let's Encrypt staging and production issuers for real certificates
-
-### HashiCorp Vault
-
-Vault provides secure secret management with:
-
-- Development mode for local testing
-- Kubernetes authentication method
-- KV secrets engine
-- PKI secrets engine for certificate issuance
-
-### Sealed Secrets
-
-Sealed Secrets allows storing encrypted secrets in Git. The controller in the cluster decrypts them for use by applications.
-
-### OPA Gatekeeper
-
-Gatekeeper enforces policies across the cluster, including:
-
-- Required labels and annotations
-- Pod security requirements
-- Resource limits
-- Network policies
-
-### Example Application
-
-The example application demonstrates:
-
-- Using Vault for database credentials
-- Using Sealed Secrets for API keys
-- Secure ingress with TLS
-- Resource limit compliance
-
-## Verification
-
-To verify your infrastructure is working correctly, use our verification script:
+If you need to reset Vault to its initial state:
 
 ```bash
-./scripts/verify-environment.sh
+./scripts/reset_vault.sh
 ```
 
-For manual verification steps, see [docs/verification-guide.md](docs/verification-guide.md).
+### Check Cluster Health
 
-## Security Considerations
+Run a comprehensive check of the cluster:
 
-This infrastructure includes several security best practices:
+```bash
+./scripts/check_cluster.sh
+```
 
-- Encrypted secrets with Sealed Secrets
-- Dynamic credentials with Vault
-- TLS for all ingress resources
-- Policy enforcement with Gatekeeper
-- Network policies for pod-to-pod communication
+### Setup Observability
 
-## Extending the Infrastructure
+Deploy or update the observability stack:
 
-To add a new application:
+```bash
+./scripts/setup-observability.sh
+```
 
-1. Create a directory under `clusters/local/apps/`
-2. Add a kustomization.yaml file
-3. Configure your application resources
-4. Add your application to the main kustomization.yaml
+## Accessing Web Interfaces
 
-For examples, see the existing applications in `clusters/local/apps/`.
+See [docs/guides/UI-ACCESS-README.md](docs/guides/UI-ACCESS-README.md) for detailed information on accessing the web interfaces for different components.
+
+## Troubleshooting
+
+If you encounter issues, check the following:
+
+1. **Check pod status**:
+   ```bash
+   kubectl get pods --all-namespaces
+   ```
+
+2. **View logs for a specific component**:
+   ```bash
+   kubectl logs -n <namespace> <pod-name>
+   ```
+
+3. **Restart Minikube if needed**:
+   ```bash
+   minikube stop
+   minikube start
+   ```
+
+4. **Consult troubleshooting guides**:
+   See [docs/troubleshooting/](docs/troubleshooting/) for specific component issues.
+
+## Extending the Cluster
+
+The cluster is designed to be extensible. To add a new component:
+
+1. Create a directory under the appropriate section in `clusters/local/`
+2. Add your Kubernetes manifests or Kustomize configurations
+3. Update the main `kustomization.yaml` to include your new component
 
 ## Contributing
 
