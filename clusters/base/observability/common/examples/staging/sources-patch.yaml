@@ -1,0 +1,41 @@
+# Staging Environment Patches for Observability Helm Repositories
+# Standard sync intervals for balanced updates and API load
+
+---
+# Patch for Grafana Helm Repository - staging environment
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: grafana
+  namespace: flux-system
+  annotations:
+    environment: "staging"
+spec:
+  # Standard interval for staging environment
+  interval: 1h
+
+---
+# Patch for Prometheus Community Helm Repository - staging environment
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: prometheus-community
+  namespace: flux-system
+  annotations:
+    environment: "staging"
+spec:
+  # Standard interval for staging environment
+  interval: 1h
+
+---
+# Additional repository for staging - OpenTelemetry
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: open-telemetry
+  namespace: flux-system
+  annotations:
+    environment: "staging"
+spec:
+  interval: 1h
+  url: https://open-telemetry.github.io/opentelemetry-helm-charts 

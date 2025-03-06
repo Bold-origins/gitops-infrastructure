@@ -1,0 +1,86 @@
+# Production Environment - High Availability Configuration for Prometheus
+# This patch provides robust resource allocation for production environments
+
+prometheus:
+  prometheusSpec:
+    # Extended retention time for production
+    retention: 30d
+    # Three replicas for high availability in production
+    replicas: 3
+    # Production-grade resource requirements
+    resources:
+      requests:
+        memory: 4Gi
+        cpu: 1000m
+      limits:
+        memory: 8Gi
+        cpu: 2000m
+    # Enable persistent storage with larger capacity for production
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: premium-ssd
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 500Gi
+    # Standard scrape interval with longer evaluation interval
+    scrapeInterval: 1m
+    evaluationInterval: 1m
+    # Enable Thanos sidecar for long-term storage integration
+    thanos:
+      objectStorageConfig:
+        name: thanos-objstore
+        key: objstore.yml
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 100m
+        limits:
+          memory: 512Mi
+          cpu: 200m
+
+# Enable Alertmanager with high availability configuration
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    replicas: 3
+    resources:
+      requests:
+        memory: 512Mi
+        cpu: 200m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: premium-ssd
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+
+# Disable Grafana as it's deployed separately
+grafana:
+  enabled: false
+
+# Production resources for kube-state-metrics
+kubeStateMetrics:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 200m
+    limits:
+      memory: 512Mi
+      cpu: 400m
+
+# Production resources for node-exporter
+nodeExporter:
+  resources:
+    requests:
+      memory: 128Mi
+      cpu: 100m
+    limits:
+      memory: 256Mi
+      cpu: 200m 

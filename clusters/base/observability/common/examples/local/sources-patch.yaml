@@ -1,0 +1,28 @@
+# Local Environment Patches for Observability Helm Repositories
+# Faster sync intervals for quicker development iterations
+
+---
+# Patch for Grafana Helm Repository - local environment
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: grafana
+  namespace: flux-system
+  annotations:
+    environment: "local"
+spec:
+  # Shorter interval for faster development feedback
+  interval: 30m
+
+---
+# Patch for Prometheus Community Helm Repository - local environment
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: prometheus-community
+  namespace: flux-system
+  annotations:
+    environment: "local"
+spec:
+  # Shorter interval for faster development feedback
+  interval: 30m 

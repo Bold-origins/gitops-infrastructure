@@ -1,0 +1,84 @@
+# Local Environment - Minimal Resources Configuration for OpenTelemetry Collector
+# This patch reduces resource usage for local development environments
+
+# Use static mode for local development (instead of daemonset)
+mode: deployment
+replicaCount: 1
+
+# Reduced resource requirements for local development
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+
+# Configuration for local development
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+    
+    # Add basic metrics collection for local development
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: 'otel-collector'
+            scrape_interval: 30s
+            static_configs:
+              - targets: ['${MY_POD_IP}:8888']
+  
+  processors:
+    # Simplified batch settings for local development
+    batch:
+      timeout: 5s
+      send_batch_size: 256
+
+    # Add memory limiter for local development
+    memory_limiter:
+      check_interval: 2s
+      limit_mib: 100
+  
+  exporters:
+    # Configure prometheus exporter
+    prometheus:
+      endpoint: 0.0.0.0:8889
+      namespace: otel
+      
+    # Enable debug logging
+    logging:
+      verbosity: detailed
+      
+    # Configure otlp exporter for prometheus integration
+    otlp:
+      endpoint: prometheus-server.observability.svc.cluster.local:9090
+      tls:
+        insecure: true
+        
+    # Configure S3 exporter to use local MinIO
+    s3:
+      region: us-east-1
+      access_key: minioadmin  # Default local credentials
+      secret_key: minioadmin  # Default local credentials
+      endpoint: minio.minio-system:9000
+      bucket: tempo-local
+      path: traces-local
+      s3_force_path_style: true
+      insecure: true
+      
+  service:
+    pipelines:
+      # Simplified pipeline structure for local development
+      metrics:
+        receivers: [otlp, prometheus]
+        processors: [memory_limiter, batch]
+        exporters: [prometheus, logging]
+      traces:
+        receivers: [otlp]
+        processors: [memory_limiter, batch]
+        exporters: [logging, s3] 

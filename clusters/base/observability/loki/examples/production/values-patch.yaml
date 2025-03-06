@@ -1,0 +1,156 @@
+# Production Environment - High Availability Configuration for Loki
+# This patch provides robust resource allocation for production environments
+
+loki:
+  # Enable authentication and TLS for production
+  auth_enabled: true
+  
+  # Distributed deployment for high availability in production
+  # We'll use the "microservices" mode for scalability
+  singleBinary:
+    enabled: false
+  
+  # Enable microservices deployment for production
+  gateway:
+    enabled: true
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  
+  distributor:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  ingester:
+    replicas: 3
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+        
+  querier:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+        
+  query_frontend:
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  
+  # Production storage configuration using external object storage or MinIO
+  storage:
+    bucketNames:
+      chunks: loki-prod
+      ruler: loki-prod-rules
+      admin: loki-prod-admin
+    type: s3
+    s3:
+      endpoint: minio.minio-system:9000
+      region: us-east-1
+      # In production, use proper secrets
+      secretAccessKey: ${S3_SECRET_KEY}
+      accessKeyId: ${S3_ACCESS_KEY}
+      s3ForcePathStyle: true
+      insecure: false
+  
+  # Disable persistence as we're using S3 storage
+  persistence:
+    enabled: false
+  
+  # Production-grade schema configuration
+  schemaConfig:
+    configs:
+      - from: 2020-05-15
+        store: boltdb-shipper
+        object_store: s3
+        schema: v11
+        index:
+          prefix: index_
+          period: 24h
+  
+  # Extended log retention for production
+  limits_config:
+    retention_period: 744h  # 31 days
+    
+  # Optimized compaction for production
+  compactor:
+    working_directory: /data/loki/compactor
+    compaction_interval: 30m
+    retention_enabled: true
+    retention_delete_delay: 2h
+    shared_store: s3
+    
+  # Configure robust alerting for production
+  ruler:
+    enabled: true
+    alertmanager_url: http://prometheus-alertmanager.observability.svc.cluster.local:9093
+    enable_api: true
+    ring:
+      kvstore:
+        store: memberlist
+    rule_path: /tmp/loki/rules
+    storage:
+      type: s3
+      s3:
+        bucketnames: loki-prod-rules
+
+# Promtail configuration with production resources
+promtail:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+      
+  # Configure Promtail for production log scraping
+  config:
+    snippets:
+      pipelineStages:
+        - docker: {}
+        - regex:
+            expression: '(level|lvl|severity)=(?P<level>\w+)'
+        - labels:
+            level:
+        - match:
+            selector: '{container_name=~".*"}'
+            stages:
+              - regex:
+                  expression: '^(?P<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3})'
+              - timestamp:
+                  source: timestamp
+                  format: '2006-01-02 15:04:05.000'
+              - labels:
+                  app:
+                  namespace:
+                  pod:
+
+# Disable Grafana as it's deployed separately
+grafana:
+  enabled: false 

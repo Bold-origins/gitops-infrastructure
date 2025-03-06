@@ -1,0 +1,162 @@
+# Production Environment Configuration for Vault
+# High availability setup with enhanced security and resources
+
+# Server configuration
+server:
+  # Disable development mode for production
+  dev:
+    enabled: false
+  
+  # Enable persistent storage for production
+  dataStorage:
+    enabled: true
+    size: "10Gi"
+    storageClass: "premium-rwo"  # Use high-performance storage
+    accessMode: "ReadWriteOnce"
+  
+  # Disable standalone mode in favor of HA
+  standalone:
+    enabled: false
+  
+  # Enable HA mode for production
+  ha:
+    enabled: true
+    replicas: 3  # Multiple replicas for HA
+    raft:
+      enabled: true
+      setNodeId: true
+    config: |
+      ui = true
+      
+      listener "tcp" {
+        tls_disable = 0
+        tls_cert_file = "/vault/tls/tls.crt"
+        tls_key_file = "/vault/tls/tls.key"
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+      }
+      
+      storage "raft" {
+        path = "/vault/data"
+        retry_join {
+          leader_api_addr = "https://vault-0.vault-internal:8200"
+        }
+        retry_join {
+          leader_api_addr = "https://vault-1.vault-internal:8200"
+        }
+        retry_join {
+          leader_api_addr = "https://vault-2.vault-internal:8200"
+        }
+      }
+      
+      seal "transit" {
+        address         = "https://vault-transit.example.com:8200"
+        token           = "$VAULT_TRANSIT_TOKEN"
+        disable_renewal = "false"
+        key_name        = "autounseal"
+        mount_path      = "transit/"
+        tls_skip_verify = "false"
+      }
+  
+  # Higher resources for production
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "1024Mi"
+      cpu: "500m"
+  
+  # Production environment annotations
+  annotations:
+    environment: "production"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8200"
+    prometheus.io/path: "/v1/sys/metrics"
+    backup.velero/include: "true"
+    alert-tier: "critical"
+  
+  # Enhanced security context for production
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 100
+    fsGroup: 1000
+  
+  # Production-ready image configuration
+  image:
+    repository: hashicorp/vault
+    tag: "1.15.2"
+    pullPolicy: IfNotPresent
+  
+  # Comprehensive health checks for production
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    failureThreshold: 3
+    successThreshold: 1
+  
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    failureThreshold: 3
+    successThreshold: 1
+  
+  # Affinity for improved HA
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault
+          topologyKey: "kubernetes.io/hostname"
+  
+  # Node selector for controlled placement
+  nodeSelector:
+    kubernetes.io/os: linux
+  
+  # Tolerations for production workloads
+  tolerations:
+    - key: "CriticalAddonsOnly"
+      operator: "Exists"
+
+# UI enabled for production
+ui:
+  enabled: true
+  serviceType: "ClusterIP"
+  externalPort: 8200
+
+# Enable injector for production
+injector:
+  enabled: true
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  affinity:
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: vault-agent-injector
+          topologyKey: "kubernetes.io/hostname"
+
+# Enable CSI for production
+csi:
+  enabled: true
+  image:
+    repository: hashicorp/vault-csi-provider
+    tag: "1.4.0"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m" 

@@ -11,4 +11,4 @@ resources:
   - supabase
   - cert-manager
   - gatekeeper
-  - sealed-secrets 
+  - sealed-secrets

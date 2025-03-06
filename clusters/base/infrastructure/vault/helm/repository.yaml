@@ -1,0 +1,14 @@
+# For reference, this is the HelmRepository CRD that would be used with Flux v2
+# ENVIRONMENT-SPECIFIC: Repository configurations may be centralized or environment-specific
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: hashicorp
+  namespace: flux-system
+  # ENVIRONMENT-SPECIFIC: Add environment-specific annotations if needed
+  # annotations:
+  #   environment: base
+spec:
+  # ENVIRONMENT-SPECIFIC: Sync interval may differ by environment
+  interval: 1h
+  url: https://helm.releases.hashicorp.com 

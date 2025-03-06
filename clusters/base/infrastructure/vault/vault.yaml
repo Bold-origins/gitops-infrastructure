@@ -1,0 +1,123 @@
+# ENVIRONMENT-SPECIFIC: Vault Deployment
+# This defines a development-mode Vault deployment
+# For production, you should use the Helm chart's HA configuration instead
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+spec:
+  # ENVIRONMENT-SPECIFIC: Replicas should be increased for HA in production
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: vault
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: vault
+      # ENVIRONMENT-SPECIFIC: Add monitoring annotations in production
+      # annotations:
+      #   prometheus.io/scrape: "true"
+      #   prometheus.io/port: "8200"
+      #   prometheus.io/path: "/v1/sys/metrics"
+    spec:
+      # ENVIRONMENT-SPECIFIC: Security context for production
+      # securityContext:
+      #   runAsNonRoot: true
+      #   runAsUser: 100
+      #   fsGroup: 1000
+      
+      # ENVIRONMENT-SPECIFIC: Add node selector for production
+      # nodeSelector:
+      #   kubernetes.io/os: linux
+      
+      # ENVIRONMENT-SPECIFIC: Add tolerations for production
+      # tolerations:
+      # - key: "CriticalAddonsOnly"
+      #   operator: "Exists"
+      containers:
+      - name: vault
+        # ENVIRONMENT-SPECIFIC: Image version should be pinned
+        image: vault:1.15.2
+        ports:
+        - containerPort: 8200
+        # ENVIRONMENT-SPECIFIC: Environment variables differ by environment
+        # - local/dev: simple development settings
+        # - production: more complex configuration
+        env:
+        - name: VAULT_DEV_ROOT_TOKEN_ID
+          value: "root"
+        - name: VAULT_DEV_LISTEN_ADDRESS
+          value: "0.0.0.0:8200"
+        # ENVIRONMENT-SPECIFIC: Add resource limits and requests in production
+        # resources:
+        #   requests:
+        #     memory: "256Mi"
+        #     cpu: "100m"
+        #   limits:
+        #     memory: "512Mi"
+        #     cpu: "200m"
+        securityContext:
+          capabilities:
+            add: ["IPC_LOCK"]
+        # ENVIRONMENT-SPECIFIC: Add readiness and liveness probes for production
+        # readinessProbe:
+        #   httpGet:
+        #     path: "/v1/sys/health"
+        #     port: 8200
+        #   initialDelaySeconds: 15
+        #   periodSeconds: 10
+        # livenessProbe:
+        #   httpGet:
+        #     path: "/v1/sys/health"
+        #     port: 8200
+        #   initialDelaySeconds: 30
+        #   periodSeconds: 10
+---
+# ENVIRONMENT-SPECIFIC: Vault Service
+# Service configuration is generally consistent across environments
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+  # ENVIRONMENT-SPECIFIC: Add annotations for service discovery in production
+  # annotations:
+  #   prometheus.io/scrape: "true"
+  #   prometheus.io/port: "8200"
+spec:
+  selector:
+    app.kubernetes.io/name: vault
+  ports:
+  - port: 8200
+    targetPort: 8200
+    protocol: TCP
+    name: http
+---
+# ENVIRONMENT-SPECIFIC: Vault Service Account
+# Service account configuration generally remains consistent
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault
+  namespace: vault
+---
+# ENVIRONMENT-SPECIFIC: RBAC Configuration
+# RBAC is generally consistent across environments
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: vault-auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: vault
+  namespace: vault 

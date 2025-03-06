@@ -1,9 +1,0 @@
-# For reference, this is the HelmRepository CRD that would be used with Flux v2
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: hashicorp
-  namespace: flux-system
-spec:
-  interval: 1h
-  url: https://helm.releases.hashicorp.com 

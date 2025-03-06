@@ -1,0 +1,50 @@
+# Local Environment Configuration for Vault
+# Development mode with minimal resources
+
+# Server configuration
+server:
+  # Development mode enabled for local environment
+  dev:
+    enabled: true
+    devRootToken: "root"  # Simple token for development
+  
+  # Storage configuration - using memory for development
+  dataStorage:
+    enabled: false  # In-memory storage for development
+  
+  # Single instance for local development
+  standalone:
+    enabled: true
+  
+  # Minimal resources for local development
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+  
+  # Local development annotations
+  annotations:
+    environment: "local"
+  
+  # Environment variables for development
+  extraEnvironmentVars:
+    VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    VAULT_ADDR: "http://localhost:8200"
+    VAULT_DEV_ROOT_TOKEN_ID: "root"
+    VAULT_LOG_LEVEL: "debug"  # More verbose logging for debugging
+
+# UI enabled for local development
+ui:
+  enabled: true
+  serviceType: "ClusterIP"
+
+# Disable injector for local development
+injector:
+  enabled: false
+
+# Disable CSI for local development
+csi:
+  enabled: false 

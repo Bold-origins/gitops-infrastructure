@@ -1,0 +1,89 @@
+# Local Environment - Configuration for Supabase
+# This patch provides minimal resource settings for local development
+
+# Global labels for all resources
+global:
+  labels:
+    environment: local
+    tier: applications
+
+# Database configuration - minimal resources for local dev
+db:
+  image:
+    tag: 15.1.0.147  # Use a stable version for local
+  # Disable persistence for local development to avoid PV requirements
+  persistence:
+    enabled: false
+  # Minimal resources for local development
+  resources:
+    limits:
+      cpu: 250m
+      memory: 500Mi
+    requests:
+      cpu: 50m
+      memory: 200Mi
+
+# Only enable core components needed for development
+studio:
+  enabled: true  # Enable Studio for local development UI
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+auth:
+  enabled: true  # Enable auth for local development
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+rest:
+  enabled: true  # Enable REST API for local development
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+# Disable optional components to save resources in local dev
+realtime:
+  enabled: false
+
+meta:
+  enabled: false
+
+storage:
+  enabled: false
+
+imgproxy:
+  enabled: false
+
+# Configure Kong with local ingress
+kong:
+  enabled: true
+  ingress:
+    enabled: true
+    tls:
+      enabled: false  # No TLS for local development
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    hostname: supabase.local  # Local hostname
+
+# Disable analytics in local environment
+analytics:
+  enabled: false
+
+vector:
+  enabled: false
+
+functions:
+  enabled: false 

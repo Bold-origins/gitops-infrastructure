@@ -1,7 +1,17 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# Reference the base metallb configuration
 resources:
-  - base
-  - metallb-config.yaml
-  - metallb-source.yaml 
+- ../../../base/infrastructure/metallb
+
+# Apply local-specific patches
+patches:
+- path: patches/helmrelease-patch.yaml
+  target:
+    kind: HelmRelease
+    name: metallb
+    namespace: metallb-system
+# Uncomment and add patches as needed
+# - patches/deployment-patch.yaml
+# - patches/service-patch.yaml

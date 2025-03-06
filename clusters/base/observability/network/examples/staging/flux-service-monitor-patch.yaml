@@ -1,0 +1,38 @@
+# Staging Environment - Service Monitor Configuration for Flux
+# This patch configures standard monitoring for staging environment
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-system
+  namespace: monitoring
+  annotations:
+    environment: "staging"
+spec:
+  # Standard scrape interval for staging
+  endpoints:
+    - port: http
+      interval: 30s
+      # Add metrics relabeling for improved metric collection
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'gotk_.*'
+          action: keep
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-notification
+  namespace: monitoring
+  annotations:
+    environment: "staging"
+spec:
+  # Standard scrape interval for staging
+  endpoints:
+    - port: http
+      interval: 30s
+      # Add metrics relabeling for improved metric collection
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'gotk_.*'
+          action: keep 

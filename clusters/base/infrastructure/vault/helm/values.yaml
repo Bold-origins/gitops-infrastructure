@@ -1,0 +1,155 @@
+# Values for Vault Helm chart
+# Reference: https://github.com/hashicorp/vault-helm
+# This is the BASE configuration - environment-specific overlays should customize as needed
+
+# NOTE: We had an issue with the image format. The deployment was trying to use 
+# "vault:1.15.2" instead of "hashicorp/vault:1.15.2". Ensure the repository
+# is always specified as "hashicorp/vault" and a specific version tag is used.
+
+# ENVIRONMENT-SPECIFIC: Server configuration
+server:
+  # ENVIRONMENT-SPECIFIC: Development mode
+  # - local/dev: typically enabled for simplicity
+  # - staging/production: should be disabled in favor of proper configuration
+  dev:
+    enabled: true
+    # ENVIRONMENT-SPECIFIC: Change to a more secure token in staging/production
+    devRootToken: "root"
+
+  # ENVIRONMENT-SPECIFIC: Storage configuration
+  # - local/dev: typically in-memory is sufficient
+  # - staging/production: should use persistent storage
+  # ha:
+  #   enabled: false  # Enable for HA in production
+  #   replicas: 3     # Use multiple replicas in production
+
+  # ENVIRONMENT-SPECIFIC: Service configuration
+  # Local usually uses ClusterIP, while Production might use different options
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 8200
+    targetPort: 8200
+
+  # ENVIRONMENT-SPECIFIC: Data storage configuration
+  # - local/dev: can use in-memory storage (disabled)
+  # - staging/production: should enable persistent storage
+  dataStorage:
+    enabled: false
+    # Production values:
+    # size: 10Gi
+    # storageClass: "standard"
+    # accessMode: ReadWriteOnce
+
+  # ENVIRONMENT-SPECIFIC: Standalone vs HA mode
+  # - local/dev: standalone is sufficient
+  # - staging/production: consider HA configuration
+  standalone:
+    enabled: true
+    # Production configuration:
+    # config: |
+    #   ui = true
+    #   
+    #   listener "tcp" {
+    #     tls_disable = 0
+    #     tls_cert_file = "/vault/tls/tls.crt"
+    #     tls_key_file = "/vault/tls/tls.key"
+    #     address = "[::]:8200"
+    #   }
+    #
+    #   storage "file" {
+    #     path = "/vault/data"
+    #   }
+
+  # ENVIRONMENT-SPECIFIC: Resource limits and requests
+  # - local/dev: minimal resources
+  # - staging: medium resources
+  # - production: higher resources for better performance
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+  # ENVIRONMENT-SPECIFIC: Service account configuration
+  # Generally consistent across environments
+  serviceAccount:
+    create: true
+    name: vault
+    annotations: {}
+
+  # ENVIRONMENT-SPECIFIC: Pod annotations 
+  # - local/dev: basic annotations
+  # - staging/production: more comprehensive monitoring annotations
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/v1/sys/metrics"
+    prometheus.io/port: "8200"
+    # Production-specific annotations:
+    # backup.velero/include: "true"
+    # alert-tier: "critical"
+
+  # ENVIRONMENT-SPECIFIC: Extra environment variables
+  # May differ between environments
+  extraEnvironmentVars:
+    VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+    VAULT_ADDR: "http://localhost:8200"
+    # Production environments may have additional variables
+    # VAULT_LOG_LEVEL: "info"
+    # VAULT_CLUSTER_ADDR: "https://vault-active.vault.svc:8201"
+
+  # ENVIRONMENT-SPECIFIC: Image configuration
+  # Consider using more stable versions in production
+  image:
+    repository: hashicorp/vault
+    tag: "1.15.2"  # Using specific version instead of latest
+    pullPolicy: IfNotPresent
+
+  # ENVIRONMENT-SPECIFIC: Security Context
+  # Should be more restrictive in production
+  # securityContext:
+  #   runAsNonRoot: true
+  #   runAsUser: 100
+  #   capabilities:
+  #     add: ["IPC_LOCK"]
+
+# ENVIRONMENT-SPECIFIC: UI configuration
+# May be disabled in some production environments for security
+ui:
+  enabled: true
+  serviceType: "ClusterIP"
+  serviceNodePort: null
+  externalPort: 8200
+
+# ENVIRONMENT-SPECIFIC: Injector configuration
+# - local/dev: typically disabled for simplicity
+# - staging/production: may enable for pod injection capabilities
+injector:
+  enabled: false
+  # Production configuration
+  # resources:
+  #   requests:
+  #     memory: "128Mi"
+  #     cpu: "100m"
+  #   limits:
+  #     memory: "256Mi"
+  #     cpu: "200m"
+
+# ENVIRONMENT-SPECIFIC: CSI provider configuration
+# - local/dev: typically disabled
+# - staging/production: may enable for secret integration with CSI
+csi:
+  enabled: false
+  # Production configuration
+  # image:
+  #   repository: hashicorp/vault-csi-provider
+  #   tag: "1.4.0"
+  # resources:
+  #   requests:
+  #     memory: "128Mi"
+  #     cpu: "100m"
+  #   limits:
+  #     memory: "256Mi"
+  #     cpu: "200m"

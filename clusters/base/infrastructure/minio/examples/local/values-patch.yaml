@@ -1,0 +1,59 @@
+# Local Environment Configuration for MinIO
+# Minimal setup with small resource footprint
+
+# Deployment mode - standalone for local development
+mode: standalone
+
+# Minimal resources for local development
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "50m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+# Minimal persistence for local development
+persistence:
+  enabled: true
+  size: 5Gi
+  # Use default storage class for local
+
+# Service configuration for local access
+service:
+  type: ClusterIP
+
+# Local ingress configuration
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - minio.local
+  tls: []
+
+# Console configuration
+console:
+  enabled: true
+  ingress:
+    enabled: true
+    hosts:
+      - minio-console.local
+
+# Disable metrics for local development
+metrics:
+  serviceMonitor:
+    enabled: false
+
+# Simplified health checks for faster local startup
+livenessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+# Development-friendly network policy
+networkPolicy:
+  enabled: false

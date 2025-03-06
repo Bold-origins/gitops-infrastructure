@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base cert-manager configuration
+resources:
+  - ../../../../base/infrastructure/cert-manager
+
+# Apply local environment patches
+patchesStrategicMerge:
+  - cluster-issuers-patch.yaml
+
+# Merge our values with the base values
+configMapGenerator:
+  - name: cert-manager-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml 

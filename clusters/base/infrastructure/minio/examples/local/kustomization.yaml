@@ -1,0 +1,38 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base minio configuration
+resources:
+  - ../../../../base/infrastructure/minio
+
+# Common labels for all resources
+commonLabels:
+  environment: local
+  tier: infrastructure
+
+# Apply the values patch to the HelmRelease
+configMapGenerator:
+  - name: minio-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml
+
+# Apply the buckets patch
+patchesStrategicMerge:
+  - buckets-patch.yaml
+
+# Apply the release patch
+patches:
+  - patch: |-
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: minio
+        namespace: minio
+      spec:
+        # Local environment specific settings
+        interval: 1m  # More frequent reconciliation for development
+    target:
+      kind: HelmRelease
+      name: minio
+      namespace: minio

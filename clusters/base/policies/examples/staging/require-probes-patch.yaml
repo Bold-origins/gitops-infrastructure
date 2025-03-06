@@ -1,0 +1,30 @@
+# Staging Environment - Policy Configuration for Required Probes
+# This patch configures moderate requirements for staging environment
+
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequireProbes
+metadata:
+  name: require-probes
+  annotations:
+    environment: "staging"
+spec:
+  # For staging, we enforce in most namespaces but exclude system namespaces
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
+    # Apply to all non-excluded namespaces
+    # We don't specify namespaces here to apply broadly
+    # Exclude system namespaces and monitoring namespaces
+    excludedNamespaces:
+      - "kube-system"
+      - "gatekeeper-system"
+      - "flux-system"
+      - "observability"
+      - "cert-manager"
+  parameters:
+    # In staging, require both readinessProbe and livenessProbe
+    probes: ["readinessProbe", "livenessProbe"]
+  
+  # Set to dryrun in staging for validation without breaking deployments
+  enforcementAction: dryrun

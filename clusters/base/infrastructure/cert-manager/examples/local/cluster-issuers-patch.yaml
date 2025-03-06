@@ -1,0 +1,16 @@
+# Local Environment Patch for Cluster Issuers
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    email: dev-team@example.com
+---
+# For local development, we may not need the production issuer
+# This removes it from the local environment
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+  $patch: delete

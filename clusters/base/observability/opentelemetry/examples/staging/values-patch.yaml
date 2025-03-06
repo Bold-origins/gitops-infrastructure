@@ -1,0 +1,108 @@
+# Staging Environment - Balanced Resources Configuration for OpenTelemetry Collector
+# This patch provides moderate resource allocation for staging environments
+
+# Use daemonset mode to collect from all nodes in staging
+mode: daemonset
+
+# Moderate resource requirements for staging
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+# Configuration for staging environment
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+    
+    # Add Kubernetes metrics collection for staging
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: 'otel-collector'
+            scrape_interval: 30s
+            static_configs:
+              - targets: ['${MY_POD_IP}:8888']
+          - job_name: 'k8s-pods'
+            kubernetes_sd_configs:
+              - role: pod
+            relabel_configs:
+              - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                action: keep
+                regex: true
+    
+    # Enable kubeletstats collection for node metrics
+    kubeletstats:
+      collection_interval: 30s
+      auth_type: "serviceAccount"
+      endpoint: "${env:NODE_IP}:10250"
+      metric_groups:
+        - container
+        - pod
+        - node
+  
+  processors:
+    # Standard batch settings for staging
+    batch:
+      timeout: 10s
+      send_batch_size: 1024
+
+    # Memory limiter for resource control
+    memory_limiter:
+      check_interval: 5s
+      limit_mib: 200
+    
+    # Add resource detection for staging
+    resource:
+      detectors: [env, system]
+      attributes:
+        - key: deployment.environment
+          value: staging
+          action: insert
+  
+  exporters:
+    # Configure prometheus exporter
+    prometheus:
+      endpoint: 0.0.0.0:8889
+      namespace: otel
+      
+    # Standard logging
+    logging:
+      verbosity: normal
+      
+    # Configure otlp exporter for prometheus integration
+    otlp:
+      endpoint: prometheus-server.observability.svc.cluster.local:9090
+      tls:
+        insecure: true
+        
+    # Configure S3 exporter with secure credentials
+    s3:
+      region: us-east-1
+      access_key: ${S3_ACCESS_KEY}  # Using secret reference
+      secret_key: ${S3_SECRET_KEY}  # Using secret reference
+      endpoint: minio.minio-system:9000
+      bucket: tempo-staging
+      path: traces-staging
+      s3_force_path_style: true
+      insecure: false
+      
+  service:
+    pipelines:
+      # Standard pipeline structure for staging
+      metrics:
+        receivers: [otlp, prometheus, kubeletstats]
+        processors: [memory_limiter, resource, batch]
+        exporters: [prometheus, logging]
+      traces:
+        receivers: [otlp]
+        processors: [memory_limiter, resource, batch]
+        exporters: [logging, s3] 

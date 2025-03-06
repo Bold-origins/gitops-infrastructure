@@ -1,0 +1,256 @@
+# Production Environment - Configuration for Supabase
+# This patch provides robust, high-availability settings for production
+
+# Global labels for all resources
+global:
+  labels:
+    environment: production
+    tier: applications
+    criticality: high
+
+# Database configuration - production resources with high availability
+db:
+  image:
+    tag: 15.1.0.147  # Use same version across environments to ensure stability
+  # Enable persistence with ample storage and backup annotations
+  persistence:
+    enabled: true
+    size: 100Gi
+    storageClass: premium-ssd
+    annotations:
+      backup.velero.io/backup-volumes: data
+  # Production-grade resources
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+  # Add security context for production
+  securityContext:
+    runAsUser: 70
+    runAsGroup: 70
+    fsGroup: 70
+  # Add pod disruption budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+# Enable all core components with robust resources
+studio:
+  enabled: true
+  # Multiple replicas for high availability
+  replicas: 3
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  # Add readiness and liveness probes for production reliability
+  readinessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  livenessProbe:
+    httpGet:
+      path: /
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 20
+  # Add pod disruption budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+auth:
+  enabled: true
+  # Multiple replicas for high availability
+  replicas: 3
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  # Add readiness and liveness probes for production reliability
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 20
+  # Add pod disruption budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+rest:
+  enabled: true
+  # Multiple replicas for high availability
+  replicas: 3
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  # Add readiness and liveness probes for production reliability
+  readinessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 20
+  # Add pod disruption budget
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+# Enable all components for full production functionality
+realtime:
+  enabled: true
+  replicas: 3
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+storage:
+  enabled: true
+  replicas: 3
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+# Configure Kong with production ingress, TLS, and robust settings
+kong:
+  enabled: true
+  replicas: 3
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  ingress:
+    enabled: true
+    tls:
+      enabled: true  # Enable TLS for production
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    hostname: supabase.example.com  # Production hostname
+    tls:
+      - secretName: supabase-tls-prod
+        hosts:
+          - supabase.example.com
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2
+
+# Enable analytics for production with robust settings
+analytics:
+  enabled: true
+  replicas: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+# Enable all optional components for production
+imgproxy:
+  enabled: true
+  replicas: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+meta:
+  enabled: true
+  replicas: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+vector:
+  enabled: true
+  replicas: 2
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+functions:
+  enabled: true
+  replicas: 3
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 2 

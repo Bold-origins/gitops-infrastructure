@@ -1,0 +1,59 @@
+# Staging Environment - Alerts Configuration for Flux
+# This patch configures standard alerts for staging environment
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-alerts
+  namespace: monitoring
+  annotations:
+    environment: "staging"
+spec:
+  groups:
+  - name: flux-system
+    rules:
+    # Standard alert thresholds for staging environment
+    - alert: FluxGitOperationFailed
+      expr: sum by (namespace, name) (rate(gotk_source_git_operation_failed_total[5m])) > 0
+      for: 5m
+      labels:
+        severity: warning
+        environment: staging
+      annotations:
+        summary: "Git operation failed in {{ $labels.namespace }}/{{ $labels.name }}"
+        description: "Git repository operations are failing in staging environment, which may indicate network connectivity issues or authentication problems."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting"
+        
+    - alert: FluxReconciliationFailures
+      expr: sum by (namespace, name) (rate(gotk_reconcile_error_total{controller=~"gitrepository|helmrepository|kustomization|helmrelease"}[5m])) > 0
+      for: 10m
+      labels:
+        severity: warning
+        environment: staging
+      annotations:
+        summary: "Flux reconciliation failures in {{ $labels.namespace }}/{{ $labels.name }}"
+        description: "Flux reconciliation failures detected in staging environment, which may indicate network connectivity issues or issues with remote repositories."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting"
+        
+    - alert: HighNetworkLatency
+      expr: histogram_quantile(0.95, sum(rate(gotk_source_git_operation_duration_seconds_bucket[5m])) by (le, namespace, name)) > 10
+      for: 15m
+      labels:
+        severity: warning
+        environment: staging
+      annotations:
+        summary: "High network latency for Git operations in {{ $labels.namespace }}/{{ $labels.name }}"
+        description: "95th percentile of Git operation duration is high in staging environment, which may indicate network connectivity issues."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting"
+        
+    # Add a specific alert for staging environment
+    - alert: FluxReconciliationStuck
+      expr: max by (namespace, name) (time() - gotk_reconcile_last_success_timestamp_seconds{controller=~"gitrepository|helmrepository|kustomization|helmrelease"}) > 1800
+      for: 15m
+      labels:
+        severity: warning
+        environment: staging
+      annotations:
+        summary: "Flux reconciliation stuck in {{ $labels.namespace }}/{{ $labels.name }}"
+        description: "Flux reconciliation has not succeeded in the last 30 minutes in staging environment."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting" 

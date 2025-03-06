@@ -1,0 +1,33 @@
+# Local Environment Configuration for Sealed Secrets
+# Minimal resources with development-focused settings
+
+# Controller configuration for local development
+controller:
+  # Development-friendly logging
+  args:
+    - --key-prefix=sealed-secrets-key
+    - --update-status
+    - --log-level=debug  # More verbose logging for development
+  # Single replica for local development
+  replicas: 1
+
+# Minimal resources for local development
+resources:
+  requests:
+    memory: "32Mi"
+    cpu: "25m"
+  limits:
+    memory: "64Mi"
+    cpu: "50m"
+
+# Less frequent key renewal for development
+keyRenewPeriod: "0"  # Disable automatic key rotation for development
+
+# Development-friendly security context
+securityContext:
+  runAsNonRoot: false
+
+# Disable monitoring for local development
+metrics:
+  serviceMonitor:
+    enabled: false 

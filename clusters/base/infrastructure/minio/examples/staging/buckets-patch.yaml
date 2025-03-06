@@ -1,0 +1,54 @@
+---
+# Staging Environment: Bucket Configuration Patch
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-bucket-setup
+  namespace: minio
+  annotations:
+    backup.velero/include: "true"
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      containers:
+      - name: mc
+        image: minio/mc:RELEASE.2023-01-28T20-29-38Z  # Pin to specific version
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Wait for MinIO to be ready
+          echo "Waiting for MinIO server to be ready..."
+          until mc alias set myminio http://minio:9000 minioadmin minioadmin; do
+            sleep 5
+          done
+          
+          # Create staging environment buckets
+          for BUCKET in loki thanos prometheus tempo logs backups staging-data metrics config-backups; do
+            if mc ls myminio/$BUCKET > /dev/null 2>&1; then
+              echo "Bucket '$BUCKET' already exists, skipping creation."
+            else
+              echo "Creating bucket '$BUCKET'..."
+              mc mb myminio/$BUCKET
+              # Use private policy for staging
+              mc policy set private myminio/$BUCKET
+            fi
+          done
+          
+          # Medium retention for staging environment
+          echo "Setting retention policy for staging environment..."
+          mc ilm add --expiry-days 30 myminio/logs
+          mc ilm add --expiry-days 30 myminio/loki
+          mc ilm add --expiry-days 90 myminio/prometheus
+          mc ilm add --expiry-days 30 myminio/tempo
+          
+          echo "Staging bucket setup completed!"
+        # Medium resource limits for staging
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi 

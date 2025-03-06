@@ -1,0 +1,47 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base grafana configuration
+resources:
+  - ../../../grafana
+
+# Common labels for all resources
+commonLabels:
+  environment: production
+  tier: observability
+  criticality: high
+
+# Common annotations for production environment
+commonAnnotations:
+  environment.type: "production"
+  monitoring.enabled: "true"
+  backup.enabled: "true"
+  security-tier: "critical"
+  pagerduty.enabled: "true"
+
+# Merge our values with the base values
+configMapGenerator:
+  - name: grafana-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml
+
+# Create secrets for production environment
+# Note: In a real production environment, these would be managed by a secure
+# secret management solution like Vault or Sealed Secrets
+secretGenerator:
+  - name: grafana-admin-credentials
+    type: Opaque
+    literals:
+      # This is a placeholder - use a proper secret management solution in production
+      - password=PLACEHOLDER_REPLACE_WITH_SECURE_PASSWORD
+  - name: grafana-smtp-credentials
+    type: Opaque
+    literals:
+      # This is a placeholder - use a proper secret management solution in production
+      - password=PLACEHOLDER_REPLACE_WITH_SECURE_PASSWORD
+  - name: grafana-enterprise-license
+    type: Opaque
+    literals:
+      # This is a placeholder - use a proper secret management solution in production
+      - license=PLACEHOLDER_REPLACE_WITH_ACTUAL_LICENSE 

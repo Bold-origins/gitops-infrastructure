@@ -1,0 +1,83 @@
+# Production Environment - Service Monitor Configuration for Flux
+# This patch configures comprehensive monitoring for production environment
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-system
+  namespace: monitoring
+  annotations:
+    environment: "production"
+    prometheus.io/scrape: "true"
+spec:
+  # Standard scrape interval for production
+  endpoints:
+    - port: http
+      interval: 30s
+      scrapeTimeout: 10s  # Add explicit timeout for production
+      # Add metrics relabeling for comprehensive metric collection
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'gotk_.*'
+          action: keep
+      # Add TLS configuration for production
+      tlsConfig:
+        insecureSkipVerify: false
+        caFile: /etc/prometheus/secrets/prometheus-ca/ca.crt
+      # Add authentication for production
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-notification
+  namespace: monitoring
+  annotations:
+    environment: "production"
+    prometheus.io/scrape: "true"
+spec:
+  # Standard scrape interval for production
+  endpoints:
+    - port: http
+      interval: 30s
+      scrapeTimeout: 10s  # Add explicit timeout for production
+      # Add metrics relabeling for comprehensive metric collection
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'gotk_.*'
+          action: keep
+      # Add TLS configuration for production
+      tlsConfig:
+        insecureSkipVerify: false
+        caFile: /etc/prometheus/secrets/prometheus-ca/ca.crt
+      # Add authentication for production
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token
+---
+# Add a service monitor for Flux Kustomize Controller in production
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-kustomize
+  namespace: monitoring
+  annotations:
+    environment: "production"
+    prometheus.io/scrape: "true"
+spec:
+  selector:
+    matchLabels:
+      app: kustomize-controller
+  namespaceSelector:
+    matchNames:
+      - flux-system
+  endpoints:
+    - port: http
+      interval: 30s
+      scrapeTimeout: 10s
+      metricRelabelings:
+        - sourceLabels: [__name__]
+          regex: 'gotk_.*'
+          action: keep
+      tlsConfig:
+        insecureSkipVerify: false
+        caFile: /etc/prometheus/secrets/prometheus-ca/ca.crt
+      bearerTokenFile: /var/run/secrets/kubernetes.io/serviceaccount/token 

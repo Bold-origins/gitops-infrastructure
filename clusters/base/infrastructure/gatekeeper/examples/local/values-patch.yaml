@@ -1,0 +1,38 @@
+# Local Environment - Minimal Resources
+replicas: 1
+
+# Longer audit interval to reduce resource usage
+auditInterval: 60
+
+# More verbose logging for development
+logLevel: DEBUG
+
+# Reduced resources for local development
+controllerManager:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+audit:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+# Additional exempt namespaces for local development
+exemptNamespaces:
+  - kube-system
+  - gatekeeper-system
+  - local-dev
+  - flux-system
+  - observability
+
+# Longer timeout for local debugging
+validatingWebhookTimeoutSeconds: 5 

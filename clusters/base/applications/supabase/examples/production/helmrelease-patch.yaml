@@ -1,0 +1,96 @@
+# Production Environment - HelmRelease Configuration for Supabase
+# This patch configures the HelmRelease for production environment
+
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: supabase
+  namespace: supabase
+  labels:
+    environment: production
+    tier: applications
+    criticality: high
+  annotations:
+    # Force certain labels to be added to all resources
+    helm.toolkit.fluxcd.io/common-labels: |
+      app: supabase
+      environment: production
+      tier: applications
+      criticality: high
+spec:
+  # Less frequent reconciliation for production to reduce load
+  interval: 30m
+  # Longer timeout for production to handle complex operations
+  timeout: 15m
+  # Keep more history in production for better rollback capability
+  maxHistory: 10
+  
+  # Configure chart source for production
+  chart:
+    spec:
+      # Require chart verification in production
+      verify:
+        provider: generic
+        secretRef:
+          name: supabase-chart-gpg-keys
+      sourceRef:
+        kind: GitRepository
+        name: supabase
+        namespace: supabase
+  
+  install:
+    remediation:
+      retries: 5
+    createNamespace: true
+    
+  upgrade:
+    # More careful remediation for production
+    remediation:
+      retries: 3
+      remediateLastFailure: true
+    # Schedule updates during maintenance window
+    schedule: "0 2 * * 0"  # Sunday at 2 AM
+    cleanupOnFail: true
+    
+  # Comprehensive health checks for production
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: supabase-db
+      namespace: supabase
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: supabase-studio
+      namespace: supabase
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: supabase-auth
+      namespace: supabase
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: supabase-rest
+      namespace: supabase
+      
+  # Add post-render for production to enforce security policies
+  postRenderers:
+    - kustomize:
+        patchesStrategicMerge:
+          - apiVersion: apps/v1
+            kind: Deployment
+            metadata:
+              name: all
+            spec:
+              template:
+                metadata:
+                  annotations:
+                    security.policy: strict
+                spec:
+                  securityContext:
+                    runAsNonRoot: true
+                  containers:
+                    - name: all
+                      securityContext:
+                        allowPrivilegeEscalation: false
+                        readOnlyRootFilesystem: true
+                        capabilities:
+                          drop: ["ALL"] 

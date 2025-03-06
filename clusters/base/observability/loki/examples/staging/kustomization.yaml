@@ -1,0 +1,49 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base loki configuration
+resources:
+  - ../../../loki
+
+# Common labels for all resources
+commonLabels:
+  environment: staging
+  tier: observability
+
+# Common annotations for staging environment
+commonAnnotations:
+  environment.type: "staging"
+  monitoring.enabled: "true"
+  backup.enabled: "true"
+
+# Merge our values with the base values
+configMapGenerator:
+  - name: loki-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml
+
+# Define environment variables for S3 access
+vars:
+  - name: S3_ACCESS_KEY
+    objref:
+      kind: Secret
+      name: minio-loki-credentials
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.accesskey
+  - name: S3_SECRET_KEY
+    objref:
+      kind: Secret
+      name: minio-loki-credentials
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.secretkey
+
+# Create secrets for staging environment
+secretGenerator:
+  - name: minio-loki-credentials
+    type: Opaque
+    literals:
+      - accesskey=stagingMinio123
+      - secretkey=stagingMinioSecret456! 

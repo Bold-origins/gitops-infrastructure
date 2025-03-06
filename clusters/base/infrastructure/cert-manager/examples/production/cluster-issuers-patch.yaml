@@ -1,0 +1,18 @@
+# Production Environment Patch for Cluster Issuers
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+  # Optional: You might want to disable the staging issuer in production
+  # $patch: delete
+spec:
+  acme:
+    email: certadmin@example.com
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: certadmin@example.com 

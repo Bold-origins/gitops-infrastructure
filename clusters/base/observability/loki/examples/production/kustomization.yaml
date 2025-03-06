@@ -1,0 +1,55 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base loki configuration
+resources:
+  - ../../../loki
+
+# Common labels for all resources
+commonLabels:
+  environment: production
+  tier: observability
+  criticality: high
+
+# Common annotations for production environment
+commonAnnotations:
+  environment.type: "production"
+  monitoring.enabled: "true"
+  backup.enabled: "true"
+  security-tier: "critical"
+  pagerduty.enabled: "true"
+
+# Merge our values with the base values
+configMapGenerator:
+  - name: loki-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml
+
+# Define environment variables for S3 access
+vars:
+  - name: S3_ACCESS_KEY
+    objref:
+      kind: Secret
+      name: minio-loki-credentials
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.accesskey
+  - name: S3_SECRET_KEY
+    objref:
+      kind: Secret
+      name: minio-loki-credentials
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.secretkey
+
+# Create secrets for production environment
+# Note: In a real production environment, these would be managed by a secure
+# secret management solution like Vault or Sealed Secrets
+secretGenerator:
+  - name: minio-loki-credentials
+    type: Opaque
+    literals:
+      # This is a placeholder - use a proper secret management solution in production
+      - accesskey=PLACEHOLDER_REPLACE_WITH_SECURE_KEY
+      - secretkey=PLACEHOLDER_REPLACE_WITH_SECURE_SECRET 

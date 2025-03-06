@@ -1,0 +1,70 @@
+# Production Environment Patches for Observability Helm Repositories
+# Extended sync intervals to reduce API load and resource usage in production
+
+---
+# Patch for Grafana Helm Repository - production environment
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: grafana
+  namespace: flux-system
+  annotations:
+    environment: "production"
+    critical-component: "true"
+spec:
+  # Extended interval for production to reduce API load
+  interval: 6h
+
+---
+# Patch for Prometheus Community Helm Repository - production environment
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: prometheus-community
+  namespace: flux-system
+  annotations:
+    environment: "production"
+    critical-component: "true"
+spec:
+  # Extended interval for production to reduce API load
+  interval: 6h
+
+---
+# Additional repository for production - OpenTelemetry
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: open-telemetry
+  namespace: flux-system
+  annotations:
+    environment: "production"
+    critical-component: "true"
+spec:
+  interval: 6h
+  url: https://open-telemetry.github.io/opentelemetry-helm-charts
+
+---
+# Additional repository for production - Bitnami
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: bitnami
+  namespace: flux-system
+  annotations:
+    environment: "production"
+spec:
+  interval: 6h
+  url: https://charts.bitnami.com/bitnami
+
+---
+# Additional repository for production - New Relic
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: newrelic
+  namespace: flux-system
+  annotations:
+    environment: "production"
+spec:
+  interval: 6h
+  url: https://helm-charts.newrelic.com 

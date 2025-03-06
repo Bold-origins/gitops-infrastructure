@@ -1,0 +1,35 @@
+# Local Environment - Minimal Resources
+replicaCount: 1
+
+# Reduced resources for local development
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    cpu: 100m
+    memory: 64Mi
+
+# Disable ServiceMonitor for local development
+prometheus:
+  servicemonitor:
+    enabled: false
+
+# These components also get minimal resources
+webhook:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi
+
+cainjector:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 64Mi 

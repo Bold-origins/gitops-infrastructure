@@ -1,0 +1,28 @@
+# Local Environment - Service Monitor Configuration for Flux
+# This patch adjusts the scrape intervals for local development
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-system
+  namespace: monitoring
+  annotations:
+    environment: "local"
+spec:
+  # Faster scrape interval for local development
+  endpoints:
+    - port: http
+      interval: 60s  # Increased interval to reduce resource usage in local dev
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: flux-notification
+  namespace: monitoring
+  annotations:
+    environment: "local"
+spec:
+  # Faster scrape interval for local development
+  endpoints:
+    - port: http
+      interval: 60s  # Increased interval to reduce resource usage in local dev 

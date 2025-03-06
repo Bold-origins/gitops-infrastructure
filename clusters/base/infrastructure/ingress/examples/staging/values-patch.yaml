@@ -1,0 +1,48 @@
+# Staging Environment Configuration for NGINX Ingress
+controller:
+  # Use LoadBalancer for staging environment
+  service:
+    type: LoadBalancer
+  
+  # Medium resources for staging environment
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  # Two replicas for staging environment
+  replicaCount: 2
+  
+  # Additional config for staging environment
+  config:
+    ssl-protocols: "TLSv1.2 TLSv1.3"
+    use-forwarded-headers: "true"
+    enable-real-ip: "true"
+  
+  # Staging-specific annotations
+  podAnnotations:
+    environment: "staging"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "10254"
+  
+  # Enable metrics for staging monitoring
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus
+
+# Default backend can be enabled in staging
+defaultBackend:
+  enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 64Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi 

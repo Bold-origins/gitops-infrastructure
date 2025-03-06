@@ -1,0 +1,17 @@
+# Local Environment - Network Policy Configuration for Flux
+# This patch relaxes network policies for local development
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-flux-outbound
+  namespace: flux-system
+  annotations:
+    environment: "local"
+spec:
+  # For local development, we allow all egress traffic without restrictions
+  # This simplifies testing and development
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0  # Allow all outbound traffic 

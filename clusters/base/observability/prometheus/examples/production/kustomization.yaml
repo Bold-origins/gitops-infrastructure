@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base prometheus configuration
+resources:
+  - ../../../prometheus
+
+# Common labels for all resources
+commonLabels:
+  environment: production
+  tier: observability
+  criticality: high
+
+# Common annotations for production environment
+commonAnnotations:
+  environment.type: "production"
+  monitoring.enabled: "true"
+  backup.enabled: "true"
+  security-tier: "critical"
+  pagerduty.enabled: "true"
+
+# Merge our values with the base values
+configMapGenerator:
+  - name: prometheus-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml 

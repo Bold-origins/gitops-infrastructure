@@ -1,0 +1,73 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base opentelemetry configuration
+resources:
+  - ../../../opentelemetry
+
+# Common labels for all resources
+commonLabels:
+  environment: production
+  tier: observability
+  criticality: high
+
+# Common annotations for production environment
+commonAnnotations:
+  environment.type: "production"
+  monitoring.enabled: "true"
+  backup.enabled: "true"
+  security-tier: "critical"
+  pagerduty.enabled: "true"
+
+# Merge our values with the base values
+configMapGenerator:
+  - name: opentelemetry-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml
+
+# Define environment variables for credential access
+vars:
+  - name: S3_ACCESS_KEY
+    objref:
+      kind: Secret
+      name: minio-otel-credentials
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.accesskey
+  - name: S3_SECRET_KEY
+    objref:
+      kind: Secret
+      name: minio-otel-credentials
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.secretkey
+  - name: NEWRELIC_API_KEY
+    objref:
+      kind: Secret
+      name: newrelic-api-credentials
+      apiVersion: v1
+    fieldref:
+      fieldpath: data.apikey
+
+# Create secrets for production environment
+# Note: In a real production environment, these would be managed by a secure
+# secret management solution like Vault or Sealed Secrets
+secretGenerator:
+  - name: minio-otel-credentials
+    type: Opaque
+    literals:
+      # This is a placeholder - use a proper secret management solution in production
+      - accesskey=PLACEHOLDER_REPLACE_WITH_SECURE_KEY
+      - secretkey=PLACEHOLDER_REPLACE_WITH_SECURE_SECRET
+  - name: newrelic-api-credentials
+    type: Opaque
+    literals:
+      # This is a placeholder - use a proper secret management solution in production
+      - apikey=PLACEHOLDER_REPLACE_WITH_NEWRELIC_API_KEY
+  - name: prometheus-certs
+    type: Opaque
+    files:
+      # This is a placeholder - use a proper secret management solution in production
+      # In actual deployment, mount this as a certificate
+      - prometheus-cert.pem=examples/production/dummy-cert.pem 

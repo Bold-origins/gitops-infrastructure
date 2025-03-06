@@ -1,0 +1,105 @@
+# Add global labels for all resources to comply with Gatekeeper policies
+global:
+  labels:
+    app: supabase
+    team: infrastructure
+    environment: local
+
+secret:
+  existingSecret: supabase-jwt
+  existingSecretKeys:
+    anonKey: anonKey
+    serviceKey: serviceKey
+    jwtSecret: jwtSecret
+
+  smtp:
+    existingSecret: supabase-smtp
+    existingSecretKeys:
+      username: username
+      password: password
+  
+  dashboard:
+    existingSecret: supabase-dashboard
+    existingSecretKeys:
+      username: username
+      password: password
+  
+  db:
+    existingSecret: supabase-db
+    existingSecretKeys:
+      username: username
+      password: password
+      database: database
+      password_encoded: password_encoded
+  
+  analytics:
+    existingSecret: supabase-analytics
+    existingSecretKeys:
+      apiKey: apiKey
+  
+  s3:
+    existingSecret: supabase-s3
+    existingSecretKeys:
+      keyId: keyId
+      accessKey: accessKey
+
+db:
+  enabled: true
+  image:
+    tag: 15.1.0.147
+  livenessProbe:
+    exec:
+      command:
+        - pg_isready
+        - -U
+        - postgres
+    initialDelaySeconds: 3
+  persistence:
+    enabled: false
+  resources:
+    limits:
+      cpu: 250m
+      memory: 500Mi
+    requests:
+      cpu: 50m
+      memory: 200Mi
+
+studio:
+  enabled: false
+
+auth:
+  enabled: false
+
+rest:
+  enabled: false
+
+realtime:
+  enabled: false
+
+meta:
+  enabled: false
+
+storage:
+  enabled: false
+
+imgproxy:
+  enabled: false
+
+kong:
+  enabled: false
+  ingress:
+    enabled: true
+    tls:
+      enabled: false
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    hostname: supabase.local
+
+analytics:
+  enabled: false
+
+vector:
+  enabled: false
+
+functions:
+  enabled: false 

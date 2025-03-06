@@ -1,0 +1,88 @@
+# Staging Environment Configuration for Vault
+# Standard configuration with moderate resources
+
+# Server configuration
+server:
+  # Disable development mode for staging
+  dev:
+    enabled: false
+  
+  # Enable storage for staging
+  dataStorage:
+    enabled: true
+    size: "5Gi"
+    storageClass: "standard"
+    accessMode: "ReadWriteOnce"
+  
+  # Standard standalone mode for staging
+  standalone:
+    enabled: true
+    config: |
+      ui = true
+      
+      listener "tcp" {
+        tls_disable = 0
+        tls_cert_file = "/vault/tls/tls.crt"
+        tls_key_file = "/vault/tls/tls.key"
+        address = "[::]:8200"
+      }
+      
+      storage "file" {
+        path = "/vault/data"
+      }
+  
+  # Moderate resources for staging
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+  
+  # Staging environment annotations
+  annotations:
+    environment: "staging"
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8200"
+    prometheus.io/path: "/v1/sys/metrics"
+  
+  # Image configuration for staging
+  image:
+    repository: hashicorp/vault
+    tag: "1.15.2"
+    pullPolicy: IfNotPresent
+  
+  # Add health checks for staging
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 15
+    periodSeconds: 10
+  
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+# UI enabled for staging
+ui:
+  enabled: true
+  serviceType: "ClusterIP"
+  externalPort: 8200
+
+# Enable injector for staging
+injector:
+  enabled: true
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi"
+      cpu: "100m"
+
+# Disable CSI for staging
+csi:
+  enabled: false 

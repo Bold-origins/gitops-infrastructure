@@ -1,0 +1,72 @@
+# Local Environment - Minimal Resources Configuration for Loki
+# This patch reduces resource usage for local development environments
+
+loki:
+  # Configure for minimal resource usage in local development
+  auth_enabled: false
+  
+  # Simple single instance mode for local development
+  singleBinary:
+    replicas: 1
+  
+  # Reduced resource requirements for local development
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  
+  # Local storage configuration using MinIO
+  storage:
+    bucketNames:
+      chunks: loki-local
+      ruler: loki-local
+      admin: loki-local
+    type: s3
+    s3:
+      endpoint: minio.minio-system:9000
+      region: us-east-1
+      secretAccessKey: minioadmin  # Use default creds for local development
+      accessKeyId: minioadmin
+      s3ForcePathStyle: true
+      insecure: true
+  
+  # Disable persistence for local development
+  persistence:
+    enabled: false
+  
+  # Simplified schema configuration for local development
+  schemaConfig:
+    configs:
+      - from: 2020-05-15
+        store: boltdb-shipper
+        object_store: s3
+        schema: v11
+        index:
+          prefix: index_
+          period: 24h
+
+  # Reduced log retention for local development
+  limits_config:
+    retention_period: 24h
+    
+  # Faster compaction intervals for quicker feedback
+  compactor:
+    working_directory: /data/loki/compactor
+    compaction_interval: 5m
+
+# Promtail configuration with minimal resources
+promtail:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+
+# Disable Grafana as it's deployed separately
+grafana:
+  enabled: false 

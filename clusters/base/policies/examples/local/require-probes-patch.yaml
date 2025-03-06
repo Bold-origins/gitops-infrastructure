@@ -1,0 +1,30 @@
+# Local Environment - Policy Configuration for Required Probes
+# This patch relaxes the constraint requirements for local development
+
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequireProbes
+metadata:
+  name: require-probes
+  annotations:
+    environment: "local"
+spec:
+  # For local development, we only enforce in a limited set of namespaces
+  # and with relaxed requirements
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment"]
+    # Only apply to example namespace in local environment
+    namespaces:
+      - "example"
+    # Exclude namespaces typically used for development and testing
+    excludedNamespaces:
+      - "local-dev"
+      - "testing"
+      - "default"
+  parameters:
+    # In local, only require readinessProbe for simplicity
+    probes: ["readinessProbe"]
+  
+  # Set enforced to false in local environment to make it warning-only
+  enforcementAction: warn 

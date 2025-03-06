@@ -1,0 +1,79 @@
+# Production Environment Configuration for Sealed Secrets
+# High availability setup with enhanced security and monitoring
+
+# Controller configuration for production
+controller:
+  # Minimal logging in production
+  args:
+    - --key-prefix=sealed-secrets-key
+    - --update-status
+    - --log-level=warning  # Less verbose logging for production
+  # Multiple replicas for high availability
+  replicas: 2
+
+# Higher resources for production
+resources:
+  requests:
+    memory: "128Mi"
+    cpu: "100m"
+  limits:
+    memory: "256Mi"
+    cpu: "200m"
+
+# More frequent key renewal for security
+keyRenewPeriod: "168h"  # 7 days
+
+# Comprehensive pod annotations for production
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  backup.velero/include: "true"
+  alert-tier: "critical"
+
+# Strict security context for production
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 65534
+
+# Enhanced monitoring for production
+metrics:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus
+    namespace: monitoring
+    interval: 30s
+
+# Node affinity for optimal placement
+nodeSelector:
+  kubernetes.io/os: linux
+
+# Anti-affinity for high availability
+podAntiAffinity: true
+
+# Tolerations for controlled placement
+tolerations:
+  - key: "CriticalAddonsOnly"
+    operator: "Exists"
+
+# Pod disruption budget for high availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Production-tuned health checks
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+
+readinessProbe:
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+
+# Enhanced upgrade safety
+forceUpgrade: false 

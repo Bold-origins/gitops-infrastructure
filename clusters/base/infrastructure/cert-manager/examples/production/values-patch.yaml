@@ -1,0 +1,42 @@
+# Production Environment - High Resources with HA
+replicaCount: 2
+
+# Higher resources for production environment
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 300m
+    memory: 256Mi
+
+# Enable ServiceMonitor for production monitoring
+prometheus:
+  servicemonitor:
+    enabled: true
+
+# Critical components get adequate resources
+webhook:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+cainjector:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# Additional production-specific settings
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/metrics"
+  prometheus.io/port: "9402"
+  backup.velero/include: "true"  # If using Velero for backups 

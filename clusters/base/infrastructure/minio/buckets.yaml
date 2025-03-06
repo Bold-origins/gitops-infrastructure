@@ -1,0 +1,88 @@
+---
+# ENVIRONMENT-SPECIFIC: This bucket setup job should be customized per environment
+# Different environments may require different bucket configurations and retention policies
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-bucket-setup
+  namespace: minio
+  annotations:
+    # This ensures the job is recreated when config changes
+    kustomize.toolkit.fluxcd.io/prune: "true"
+    # ENVIRONMENT-SPECIFIC: Additional annotations could be added per environment
+    # backup.velero/include: "false"  # Consider setting to true in production
+spec:
+  # ENVIRONMENT-SPECIFIC: Job backoff limit may differ per environment
+  # backoffLimit: 3  # Higher for production to ensure completion
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: mc
+        image: minio/mc:latest
+        # ENVIRONMENT-SPECIFIC: Consider using a specific version tag in production instead of latest
+        # image: minio/mc:RELEASE.2023-01-28T20-29-38Z  # Pin to specific version in production
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Wait for MinIO to be ready
+          echo "Waiting for MinIO server to be ready..."
+          until mc alias set myminio http://minio:9000 minioadmin minioadmin; do
+            sleep 5
+          done
+          
+          # ENVIRONMENT-SPECIFIC: Create required buckets if they don't exist
+          # - local/dev: May include additional test buckets
+          # - production: May require stricter policies
+          for BUCKET in loki thanos prometheus tempo logs backups; do
+            if mc ls myminio/$BUCKET > /dev/null 2>&1; then
+              echo "Bucket '$BUCKET' already exists, skipping creation."
+            else
+              echo "Creating bucket '$BUCKET'..."
+              mc mb myminio/$BUCKET
+              # ENVIRONMENT-SPECIFIC: Public policy may not be appropriate for production
+              mc policy set public myminio/$BUCKET
+              # Production alternative:
+              # mc policy set private myminio/$BUCKET
+            fi
+          done
+          
+          # ENVIRONMENT-SPECIFIC: Configure retention policies for logs and metrics
+          # - local/dev: Shorter retention periods
+          # - staging: Medium retention periods
+          # - production: Longer retention periods and more comprehensive policies
+          echo "Setting retention policy for log buckets..."
+          # ENVIRONMENT-SPECIFIC: Adjust expiry days based on environment
+          mc ilm add --expiry-days 30 myminio/logs  # Consider 7 days for local, 90+ for production
+          mc ilm add --expiry-days 30 myminio/loki  # Consider 7 days for local, 90+ for production
+          
+          # ENVIRONMENT-SPECIFIC: Additional policies for production
+          # echo "Setting lifecycle policies for metrics data..."
+          # mc ilm add --expiry-days 365 myminio/thanos
+          # mc ilm add --expiry-days 180 myminio/prometheus
+          
+          echo "Bucket setup completed!"
+      # ENVIRONMENT-SPECIFIC: Resource limits may differ per environment
+      # resources:
+      #   limits:
+      #     cpu: 200m
+      #     memory: 256Mi
+      #   requests:
+      #     cpu: 100m
+      #     memory: 128Mi
+      initContainers:
+      - name: wait-for-minio
+        image: busybox
+        # ENVIRONMENT-SPECIFIC: Consider using specific version in production
+        # image: busybox:1.35.0
+        command:
+        - sh
+        - -c
+        - |
+          until wget --spider -q http://minio:9000/minio/health/ready; do
+            echo "Waiting for MinIO to be ready..."
+            sleep 10
+          done
+        # ENVIRONMENT-SPECIFIC: Health check timeouts may need adjustment
+        # Higher values for production where startup might take longer 

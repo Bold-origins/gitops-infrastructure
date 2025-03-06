@@ -1,5 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
+# Reference the base grafana configuration
 resources:
-  - grafana-kustomization.yaml 
+- ../../../base/observability/grafana
+
+# Apply local-specific patches
+patchesStrategicMerge:
+# Uncomment and add patches as needed
+# - patches/deployment-patch.yaml
+# - patches/service-patch.yaml

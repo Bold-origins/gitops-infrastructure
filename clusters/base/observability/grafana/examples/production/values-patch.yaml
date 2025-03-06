@@ -1,0 +1,88 @@
+# Production Environment - High Availability Configuration for Grafana
+# This patch provides robust resource allocation for production environments
+
+# Three replicas for high availability in production
+replicas: 3
+
+# Production-grade resource requirements
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 200m
+  limits:
+    memory: 1Gi
+    cpu: 500m
+
+# Enable persistence with larger storage for production
+persistence:
+  enabled: true
+  size: 50Gi
+  storageClassName: premium-ssd
+  annotations:
+    backup.velero.io/backup-volumes: grafana-storage
+
+# Secure admin user configuration
+adminUser: admin
+# Use a secret for password in production
+adminPasswordSecret: grafana-admin-credentials
+adminPasswordKey: password
+
+# Production service configuration
+service:
+  type: ClusterIP
+  port: 80
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+
+# Ingress configuration for production
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - grafana.example.com
+  tls:
+    - secretName: grafana-tls-prod
+      hosts:
+        - grafana.example.com
+
+# Enable SMTP for production alerts
+smtp:
+  enabled: true
+  host: smtp.example.com
+  user: grafana@example.com
+  passwordSecret: grafana-smtp-credentials
+  passwordKey: password
+  fromAddress: grafana@example.com
+  fromName: Grafana Production
+  skipVerify: false
+
+# Configure datasources for production
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server.observability.svc.cluster.local
+        access: proxy
+        isDefault: true
+      - name: Loki
+        type: loki
+        url: http://loki-gateway.observability.svc.cluster.local
+        access: proxy
+      - name: Tempo
+        type: tempo
+        url: http://tempo-query-frontend.observability.svc.cluster.local:3100
+        access: proxy
+
+# Enable full Grafana Enterprise features
+enterprise:
+  enabled: true
+  license:
+    secretName: grafana-enterprise-license
+    secretKey: license 

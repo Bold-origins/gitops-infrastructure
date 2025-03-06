@@ -1,0 +1,149 @@
+# Values for MinIO Helm chart
+# Reference: https://github.com/minio/minio/tree/master/helm/minio
+# This is the BASE configuration - environment-specific overlays should customize as needed
+
+# MinIO is deployed as infrastructure component for object storage
+# It provides S3-compatible storage for the cluster
+
+# ENVIRONMENT-SPECIFIC: Deployment mode
+# - local/dev: standalone is sufficient
+# - staging: standalone can work but distributed provides better reliability
+# - production: distributed with proper HA setup is recommended
+mode: standalone
+
+# Access credentials
+# SECURITY NOTE: Credentials are now managed via SealedSecrets
+# Do not store sensitive information in this file
+
+# ENVIRONMENT-SPECIFIC: Persistence configuration
+# - local/dev: smaller size (10Gi) is sufficient
+# - staging: medium size (20-50Gi) depending on usage
+# - production: larger size (100Gi+) with proper storage class
+persistence:
+  enabled: true
+  size: 10Gi
+  # ENVIRONMENT-SPECIFIC: StorageClass
+  # For cloud environments, specify the appropriate storage class
+  # - AWS: gp2, gp3
+  # - Azure: managed-premium
+  # - GCP: standard, premium-rwo
+  storageClass: ""
+
+# ENVIRONMENT-SPECIFIC: Resource limits and requests
+# - local/dev: minimal resources
+# - staging: medium resources
+# - production: higher resources based on expected load
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "100m"
+  limits:
+    memory: "512Mi"
+    cpu: "500m"
+
+# ENVIRONMENT-SPECIFIC: Service configuration
+# - local: ClusterIP is sufficient
+# - production: Consider LoadBalancer if needed for external access
+service:
+  type: ClusterIP
+  port: 9000
+  consolePort: 9001
+
+# ENVIRONMENT-SPECIFIC: Ingress configuration
+# - local/dev: Simple ingress with local domain
+# - staging: TLS with staging cert-manager issuer
+# - production: TLS with production cert-manager issuer, proper domain
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    # ENVIRONMENT-SPECIFIC: Add cert-manager annotations for staging/production
+    # cert-manager.io/cluster-issuer: letsencrypt-staging
+  path: /
+  hosts:
+    # ENVIRONMENT-SPECIFIC: Update the hostname based on environment
+    - minio.local
+  tls: []
+  # ENVIRONMENT-SPECIFIC: Enable TLS for staging/production
+  # - secretName: minio-tls
+  #   hosts:
+  #     - minio.example.com
+
+# MinIO console (UI)
+console:
+  enabled: true
+  # ENVIRONMENT-SPECIFIC: Console ingress can be configured per environment
+  # ingress:
+  #   enabled: true
+  #   annotations:
+  #     kubernetes.io/ingress.class: nginx
+  #   hosts:
+  #     - console.minio.example.com
+
+# ENVIRONMENT-SPECIFIC: Buckets to create on startup
+# These can be customized per environment if needed
+buckets:
+  - name: example-bucket
+    policy: none
+    purge: false
+  - name: logs
+    policy: none
+    purge: false
+  - name: metrics
+    policy: none
+    purge: false
+  - name: traces
+    policy: none
+    purge: false
+  - name: alerts
+    policy: none
+    purge: false
+
+# ENVIRONMENT-SPECIFIC: Metrics configuration
+# - local/dev: Typically disabled
+# - staging/production: Enable ServiceMonitor for Prometheus integration
+metrics:
+  serviceMonitor:
+    enabled: false
+    # ENVIRONMENT-SPECIFIC: Add Prometheus release label for staging/production
+    # additionalLabels:
+    #   release: prometheus
+
+# ENVIRONMENT-SPECIFIC: Health check probes
+# These may need adjustment based on environment performance
+livenessProbe:
+  initialDelaySeconds: 30
+  periodSeconds: 20
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+# ENVIRONMENT-SPECIFIC: Network policy
+# - local/dev: Typically more permissive
+# - production: More restrictive
+networkPolicy:
+  enabled: true
+  allowExternal: true
+
+# Security context
+securityContext:
+  enabled: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# ENVIRONMENT-SPECIFIC: These params are for distributed mode
+# Uncomment and configure for production environments
+# zones: 1                  # Number of zones (should be 1, 2, or 4)
+# drivesPerNode: 4          # Number of drives per node
+# replicas: 4               # Number of nodes per zone (minimum 4 for production)
+# rootUser: ""              # MinIO root user (now managed via SealedSecrets)
+# rootPassword: ""          # MinIO root password (now managed via SealedSecrets)
+
+# ENVIRONMENT-SPECIFIC: Additional production settings
+# priorityClassName: ""     # Set priority class for production workloads
+# topologySpreadConstraints: # Configure for multi-AZ deployments in production
+#   - maxSkew: 1
+#     topologyKey: topology.kubernetes.io/zone
+#     whenUnsatisfiable: DoNotSchedule

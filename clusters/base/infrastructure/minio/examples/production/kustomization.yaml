@@ -1,0 +1,63 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base minio configuration
+resources:
+  - ../../../../base/infrastructure/minio
+
+# Common labels for all resources
+commonLabels:
+  environment: production
+  tier: infrastructure
+  criticality: high
+
+# Common annotations for production
+commonAnnotations:
+  production-ready: "true"
+  backup-policy: "daily"
+  security-tier: "critical"
+  monitoring.enabled: "true"
+
+# Apply the values patch to the HelmRelease
+configMapGenerator:
+  - name: minio-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml
+
+# Apply the buckets patch
+patchesStrategicMerge:
+  - buckets-patch.yaml
+
+# Apply the release patch
+patches:
+  - patch: |-
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: minio
+        namespace: minio
+        annotations:
+          fluxcd.io/automated: "false"  # Disable automated updates in production
+          environment.config/description: "MinIO S3 storage for production environment"
+      spec:
+        # Production environment specific settings
+        interval: 30m  # Less frequent reconciliation for production
+        chart:
+          spec:
+            version: "5.0.7"  # Pin to specific version for production stability
+        # Add Install/Upgrade strategies for production
+        install:
+          remediation:
+            retries: 5
+        upgrade:
+          crds: Skip
+          remediation:
+            retries: 5
+            remediateLastFailure: true
+          # Production-specific upgrade strategy
+          strategy: RollingUpdate
+    target:
+      kind: HelmRelease
+      name: minio
+      namespace: minio 

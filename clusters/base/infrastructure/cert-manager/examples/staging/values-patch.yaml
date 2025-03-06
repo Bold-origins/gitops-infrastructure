@@ -1,0 +1,35 @@
+# Staging Environment - Medium Resources
+replicaCount: 1
+
+# Medium resources for staging environment
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+# Enable ServiceMonitor for staging monitoring
+prometheus:
+  servicemonitor:
+    enabled: true
+
+# These components get moderate resources
+webhook:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 48Mi
+    limits:
+      cpu: 150m
+      memory: 96Mi
+
+cainjector:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 48Mi
+    limits:
+      cpu: 150m
+      memory: 96Mi 

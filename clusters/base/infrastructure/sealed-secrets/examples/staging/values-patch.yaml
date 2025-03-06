@@ -1,0 +1,51 @@
+# Staging Environment Configuration for Sealed Secrets
+# Medium resource allocation with standard monitoring
+
+# Controller configuration for staging
+controller:
+  # Standard logging level for staging
+  args:
+    - --key-prefix=sealed-secrets-key
+    - --update-status
+    - --log-level=info
+  # Single replica is sufficient for staging
+  replicas: 1
+
+# Medium resources for staging
+resources:
+  requests:
+    memory: "64Mi"
+    cpu: "50m"
+  limits:
+    memory: "128Mi"
+    cpu: "100m"
+
+# Standard key renewal for staging
+keyRenewPeriod: "336h"  # 2 weeks
+
+# Pod annotations for monitoring
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+
+# Basic security context for staging
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 65534
+
+# Enable basic monitoring for staging
+metrics:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus
+
+# Health checks
+livenessProbe:
+  initialDelaySeconds: 20
+  periodSeconds: 10
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 5 

@@ -1,0 +1,91 @@
+# Production Environment - Alerts Configuration for Flux
+# This patch configures comprehensive alerts for production environment
+
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: flux-alerts
+  namespace: monitoring
+  annotations:
+    environment: "production"
+    pagerduty.enabled: "true"
+spec:
+  groups:
+  - name: flux-system
+    rules:
+    # Comprehensive alerts for production environment
+    - alert: FluxGitOperationFailed
+      expr: sum by (namespace, name) (rate(gotk_source_git_operation_failed_total[5m])) > 0
+      for: 5m
+      labels:
+        severity: critical  # Higher severity for production
+        environment: production
+        team: platform
+        pagerduty: "true"
+      annotations:
+        summary: "Git operation failed in {{ $labels.namespace }}/{{ $labels.name }}"
+        description: "Git repository operations are failing in production environment, which may indicate network connectivity issues or authentication problems. This could affect deployment of new changes."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting"
+        
+    - alert: FluxReconciliationFailures
+      expr: sum by (namespace, name) (rate(gotk_reconcile_error_total{controller=~"gitrepository|helmrepository|kustomization|helmrelease"}[5m])) > 0
+      for: 10m
+      labels:
+        severity: critical  # Higher severity for production
+        environment: production
+        team: platform
+        pagerduty: "true"
+      annotations:
+        summary: "Flux reconciliation failures in {{ $labels.namespace }}/{{ $labels.name }}"
+        description: "Flux reconciliation failures detected in production environment, which may indicate network connectivity issues or issues with remote repositories. This could affect deployment of new changes."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting"
+        
+    - alert: HighNetworkLatency
+      expr: histogram_quantile(0.95, sum(rate(gotk_source_git_operation_duration_seconds_bucket[5m])) by (le, namespace, name)) > 10
+      for: 15m
+      labels:
+        severity: warning
+        environment: production
+        team: platform
+      annotations:
+        summary: "High network latency for Git operations in {{ $labels.namespace }}/{{ $labels.name }}"
+        description: "95th percentile of Git operation duration is high in production environment, which may indicate network connectivity issues."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting"
+        
+    # Additional production-specific alerts
+    - alert: FluxReconciliationStuck
+      expr: max by (namespace, name) (time() - gotk_reconcile_last_success_timestamp_seconds{controller=~"gitrepository|helmrepository|kustomization|helmrelease"}) > 1800
+      for: 15m
+      labels:
+        severity: critical
+        environment: production
+        team: platform
+        pagerduty: "true"
+      annotations:
+        summary: "Flux reconciliation stuck in {{ $labels.namespace }}/{{ $labels.name }}"
+        description: "Flux reconciliation has not succeeded in the last 30 minutes in production environment. This could indicate a persistent issue with the GitOps system."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting"
+        
+    - alert: FluxMemoryHighUsage
+      expr: container_memory_usage_bytes{namespace="flux-system", container=~".*controller"} > 1024 * 1024 * 1024
+      for: 15m
+      labels:
+        severity: warning
+        environment: production
+        team: platform
+      annotations:
+        summary: "High memory usage in {{ $labels.container }}"
+        description: "Flux controller {{ $labels.container }} is using more than 1GB of memory in production environment."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting"
+        
+    - alert: FluxCPUHighUsage
+      expr: rate(container_cpu_usage_seconds_total{namespace="flux-system", container=~".*controller"}[5m]) > 0.5
+      for: 15m
+      labels:
+        severity: warning
+        environment: production
+        team: platform
+      annotations:
+        summary: "High CPU usage in {{ $labels.container }}"
+        description: "Flux controller {{ $labels.container }} is using more than 50% CPU in production environment."
+        runbook_url: "https://github.com/fluxcd/flux2/wiki/Troubleshooting" 

@@ -1,17 +1,18 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: vault
-
+# Reference the base vault configuration
 resources:
-- namespace.yaml
-- ingress.yaml
-# Use explicit file paths instead of directories
-- helm/release.yaml
-- helm/repository.yaml
+- ../../../base/infrastructure/vault
 
-# Import values from the values file
+# Apply local-specific patches
+patchesStrategicMerge:
+- patches/ingress-patch.yaml
+- patches/vault-patch.yaml
+
+# Import local-specific values
 configMapGenerator:
 - name: vault-values
+  behavior: merge
   files:
   - values.yaml=helm/values.yaml 

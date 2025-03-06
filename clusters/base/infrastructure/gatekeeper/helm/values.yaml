@@ -1,0 +1,126 @@
+# Values for Gatekeeper Helm chart
+# Reference: https://github.com/open-policy-agent/gatekeeper/tree/master/charts/gatekeeper
+# This is the BASE configuration - environment-specific overlays should customize as needed
+
+# ENVIRONMENT-SPECIFIC: Adjust replica count based on environment
+# - local/dev: 1 replica (default)
+# - staging: 1-2 replicas
+# - production: 2-3 replicas for high availability
+replicas: 1
+
+# ENVIRONMENT-SPECIFIC: Adjust audit interval based on environment
+# - local/dev: Longer intervals (60s+) to reduce resource usage
+# - staging: Medium intervals (30s)
+# - production: Shorter intervals (15-30s) for faster violation detection
+auditInterval: 30
+
+# ENVIRONMENT-SPECIFIC: Adjust log level based on environment
+# - local/dev: INFO or DEBUG for more verbose logging
+# - staging: INFO
+# - production: WARNING (less verbose)
+logLevel: INFO
+
+# RBAC configuration - explicitly enable to fix permission issues
+# This setting should generally remain the same across environments
+rbac:
+  create: true
+
+# Service account configuration
+# This setting should generally remain the same across environments
+serviceAccount:
+  create: true
+  name: "gatekeeper-admin"
+
+# Fix permissions for the default service account
+# This setting should generally remain the same across environments
+clusterRoles:
+  - name: gatekeeper-manager-role
+    rules:
+      - apiGroups: ["*"]
+        resources: ["*"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: ["admissionregistration.k8s.io"]
+        resources: ["validatingwebhookconfigurations"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+      - apiGroups: [""]
+        resources: ["secrets"]
+        verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+# ENVIRONMENT-SPECIFIC: Adjust resource limits based on environment
+# Controller Manager configuration
+controllerManager:
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 1000m      # production: consider 2000m+
+      memory: 512Mi   # production: consider 1024Mi+
+    requests:
+      cpu: 100m       # production: consider 200m+
+      memory: 256Mi   # production: consider 512Mi+
+
+# ENVIRONMENT-SPECIFIC: Adjust resource limits based on environment
+# Audit configuration
+audit:
+  # Resource limits and requests
+  resources:
+    limits:
+      cpu: 1000m      # production: consider 2000m+
+      memory: 512Mi   # production: consider 1024Mi+
+    requests:
+      cpu: 100m       # production: consider 200m+
+      memory: 256Mi   # production: consider 512Mi+
+
+# Webhook configuration
+webhook:
+  enabled: true
+  # Resource limits and requests are inherited from controllerManager
+
+# ENVIRONMENT-SPECIFIC: Exempt namespaces from Gatekeeper webhook and constraints
+# - local/dev: Consider adding development namespaces
+# - production: Minimize exemptions for better security
+exemptNamespaces:
+  - kube-system
+  - gatekeeper-system
+
+# Enable validating webhook
+# This should generally remain enabled across environments
+validatingWebhook:
+  enabled: true
+
+# Enable cert rotation
+# This should generally remain enabled across environments
+certRotation:
+  enabled: true
+
+# Disable mutation feature
+# This setting should generally remain the same across environments
+mutatingWebhook: false
+
+# ENVIRONMENT-SPECIFIC: Annotations for monitoring integration
+# Production environments should consider additional monitoring annotations
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8888"
+
+# ENVIRONMENT-SPECIFIC: Metrics configuration
+# These settings might be adjusted for production environments
+emitAdmissionEvents: true
+emitAuditEvents: true
+enableExternalData: true
+
+# ENVIRONMENT-SPECIFIC: Webhook timeout
+# - local/dev: Longer timeouts (3-5s)
+# - production: Balance between reliability and performance (2-3s)
+validatingWebhookTimeoutSeconds: 3
+
+# PostInstall job (create default sync config)
+# This setting should generally remain the same across environments
+postInstall:
+  labelNamespace:
+    enabled: false
+  
+# PostUpgrade job
+# This setting should generally remain the same across environments
+postUpgrade:
+  labelNamespace:
+    enabled: false 

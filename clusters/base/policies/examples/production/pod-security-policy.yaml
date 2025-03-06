@@ -1,0 +1,24 @@
+# Production Environment - Pod Security Policy Configuration
+# This is an additional policy specific to the production environment
+
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sPSPPrivilegedContainer
+metadata:
+  name: prohibit-privileged-containers
+  annotations:
+    environment: "production"
+    security-tier: "critical"
+spec:
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    # Exclude only system namespaces in production
+    excludedNamespaces:
+      - "kube-system"
+      - "gatekeeper-system"
+  
+  # Fully enforce in production environment
+  enforcementAction: deny 

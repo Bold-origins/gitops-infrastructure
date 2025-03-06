@@ -1,0 +1,73 @@
+# Staging Environment - Balanced Resources Configuration for Grafana
+# This patch provides moderate resource allocation for staging environments
+
+# Two replicas for better availability in staging
+replicas: 2
+
+# Moderate resource requirements for staging
+resources:
+  requests:
+    memory: 256Mi
+    cpu: 100m
+  limits:
+    memory: 512Mi
+    cpu: 200m
+
+# Enable persistence for staging with moderate storage
+persistence:
+  enabled: true
+  size: 10Gi
+  storageClassName: standard
+
+# Secure admin user configuration
+adminUser: admin
+# Use a secret for password in staging
+adminPasswordSecret: grafana-admin-credentials
+adminPasswordKey: password
+
+# Standard service configuration
+service:
+  type: ClusterIP
+  port: 80
+
+# Ingress configuration for staging
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+  hosts:
+    - grafana.staging.example.com
+  tls:
+    - secretName: grafana-tls
+      hosts:
+        - grafana.staging.example.com
+
+# Enable SMTP for staging
+smtp:
+  enabled: true
+  host: smtp.example.com
+  user: grafana@example.com
+  passwordSecret: grafana-smtp-credentials
+  passwordKey: password
+  fromAddress: grafana@example.com
+  fromName: Grafana Staging
+
+# Configure datasources for staging
+datasources:
+  datasources.yaml:
+    apiVersion: 1
+    datasources:
+      - name: Prometheus
+        type: prometheus
+        url: http://prometheus-server.observability.svc.cluster.local
+        access: proxy
+        isDefault: true
+      - name: Loki
+        type: loki
+        url: http://loki-gateway.observability.svc.cluster.local
+        access: proxy
+
+# Enable basic Grafana Enterprise features
+enterprise:
+  enabled: true 

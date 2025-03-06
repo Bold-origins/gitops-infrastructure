@@ -1,0 +1,84 @@
+---
+# This is a HelmRelease Custom Resource for HashiCorp Vault
+# ENVIRONMENT-SPECIFIC: This may need adjustments based on your GitOps implementation
+#
+# Installation Options:
+# 1. Flux v2: Use this HelmRelease as is (adjust sourceRef namespace if needed)
+# 2. ArgoCD: Convert to Application CR or use helm chart directly
+# 3. Manual: Use helm CLI with values
+#    helm install vault hashicorp/vault --values values.yaml
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: vault
+  namespace: vault
+  annotations:
+    # This will force Flux to restart the deployment and pick up changes
+    reconcile.fluxcd.io/requestedAt: "2025-03-04T09:49:00Z"
+    # ENVIRONMENT-SPECIFIC: Additional annotations for different environments
+    environment.config/description: "HashiCorp Vault for secret management"
+    # ENVIRONMENT-SPECIFIC: Production annotations might include:
+    # backup.velero/include: "true"
+    # security-tier: "critical"
+spec:
+  # ENVIRONMENT-SPECIFIC: Adjust interval based on environment
+  # - local/dev: shorter intervals (5m)
+  # - staging/prod: longer intervals (15m+)
+  interval: 5m
+  chart:
+    spec:
+      chart: vault
+      # ENVIRONMENT-SPECIFIC: Version pinning is important for security tools
+      # - local/dev: can use minor version ranges
+      # - staging: should pin to specific patch versions
+      # - production: must pin to specific patch versions
+      version: 0.25.0
+      sourceRef:
+        kind: HelmRepository
+        name: hashicorp
+        # ENVIRONMENT-SPECIFIC: Update namespace if needed for your GitOps setup
+        namespace: flux-system
+  # ENVIRONMENT-SPECIFIC: Install/upgrade strategy may differ per environment
+  # install:
+  #   remediation:
+  #     retries: 3
+  # upgrade:
+  #   remediation:
+  #     retries: 3
+  #     remediateLastFailure: true
+  values:
+    # These values would be read from the values.yaml file
+    # ENVIRONMENT-SPECIFIC: Server configuration varies significantly by environment
+    server:
+      # ENVIRONMENT-SPECIFIC: Development mode - disable in production!
+      dev:
+        enabled: true
+        devRootToken: "root"
+      # ENVIRONMENT-SPECIFIC: Service type may vary by environment
+      service:
+        enabled: true
+        type: ClusterIP
+      # ENVIRONMENT-SPECIFIC: Production should use persistent storage
+      dataStorage:
+        enabled: false
+      # ENVIRONMENT-SPECIFIC: Production may use HA instead of standalone
+      standalone:
+        enabled: true
+      # ENVIRONMENT-SPECIFIC: Resource requirements differ by environment
+      resources:
+        requests:
+          memory: "128Mi"
+          cpu: "100m"
+        limits:
+          memory: "256Mi"
+          cpu: "200m"
+      # ENVIRONMENT-SPECIFIC: Service account generally consistent
+      serviceAccount:
+        create: true
+        name: vault
+      # ENVIRONMENT-SPECIFIC: Image version should be pinned
+      # Local can use newer versions for testing, production should use stable versions
+      image:
+        repository: hashicorp/vault
+        tag: "1.15.2"
+        pullPolicy: IfNotPresent 

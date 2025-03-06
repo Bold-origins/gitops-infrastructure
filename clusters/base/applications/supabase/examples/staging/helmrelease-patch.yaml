@@ -1,0 +1,58 @@
+# Staging Environment - HelmRelease Configuration for Supabase
+# This patch configures the HelmRelease for staging environment
+
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: supabase
+  namespace: supabase
+  labels:
+    environment: staging
+    tier: applications
+  annotations:
+    # Force certain labels to be added to all resources
+    helm.toolkit.fluxcd.io/common-labels: |
+      app: supabase
+      environment: staging
+      tier: applications
+spec:
+  # Standard reconciliation for staging environment
+  interval: 15m
+  # Standard timeout for staging
+  timeout: 10m
+  # Keep moderate history in staging
+  maxHistory: 5
+  
+  # Configure chart source
+  chart:
+    spec:
+      # Add chart verification in staging
+      verify:
+        provider: generic
+      sourceRef:
+        kind: GitRepository
+        name: supabase
+        namespace: supabase
+  
+  install:
+    remediation:
+      retries: 3
+    createNamespace: true
+    
+  upgrade:
+    # Standard remediation for staging
+    remediation:
+      retries: 3
+      remediateLastFailure: true
+    cleanupOnFail: true
+    
+  # Add health checks for staging
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: supabase-db
+      namespace: supabase
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: supabase-studio
+      namespace: supabase 

@@ -1,0 +1,79 @@
+# Staging Environment Configuration for MinIO
+# Medium resource allocation for testing purposes
+
+# Deployment mode - standalone for staging
+mode: standalone
+
+# Medium resources for staging environment
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "100m"
+  limits:
+    memory: "1Gi"
+    cpu: "500m"
+
+# Medium-sized persistence for staging
+persistence:
+  enabled: true
+  size: 20Gi
+  # Use appropriate storage class for staging
+  storageClass: "standard"
+
+# Service configuration
+service:
+  type: ClusterIP
+
+# Staging-specific ingress configuration
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+  hosts:
+    - minio.staging.example.com
+  tls:
+    - secretName: minio-staging-tls
+      hosts:
+        - minio.staging.example.com
+
+# Console configuration
+console:
+  enabled: true
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      cert-manager.io/cluster-issuer: letsencrypt-staging
+    hosts:
+      - minio-console.staging.example.com
+    tls:
+      - secretName: minio-console-staging-tls
+        hosts:
+          - minio-console.staging.example.com
+
+# Enable metrics for staging monitoring
+metrics:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus
+
+# Standard health checks for staging
+livenessProbe:
+  initialDelaySeconds: 20
+  periodSeconds: 15
+
+readinessProbe:
+  initialDelaySeconds: 10
+  periodSeconds: 10
+
+# Staging network policy
+networkPolicy:
+  enabled: true
+  allowExternal: true
+
+# Pod annotations for monitoring
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "9000" 

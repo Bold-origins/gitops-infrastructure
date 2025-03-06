@@ -1,0 +1,53 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base minio configuration
+resources:
+  - ../../../../base/infrastructure/minio
+
+# Common labels for all resources
+commonLabels:
+  environment: staging
+  tier: infrastructure
+
+# Common annotations for staging
+commonAnnotations:
+  monitoring.enabled: "true"
+
+# Apply the values patch to the HelmRelease
+configMapGenerator:
+  - name: minio-values
+    behavior: merge
+    files:
+      - values.yaml=values-patch.yaml
+
+# Apply the buckets patch
+patchesStrategicMerge:
+  - buckets-patch.yaml
+
+# Apply the release patch
+patches:
+  - patch: |-
+      apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      metadata:
+        name: minio
+        namespace: minio
+        annotations:
+          environment.config/description: "MinIO S3 storage for staging environment"
+      spec:
+        # Staging environment specific settings
+        interval: 15m  # Less frequent reconciliation for staging
+        chart:
+          spec:
+            version: "5.0.7"  # Pin to specific version for stability
+        install:
+          remediation:
+            retries: 3
+        upgrade:
+          remediation:
+            retries: 3
+    target:
+      kind: HelmRelease
+      name: minio
+      namespace: minio 

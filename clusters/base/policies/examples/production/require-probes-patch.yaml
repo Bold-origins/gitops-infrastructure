@@ -1,0 +1,27 @@
+# Production Environment - Policy Configuration for Required Probes
+# This patch configures strict requirements for production environment
+
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sRequireProbes
+metadata:
+  name: require-probes
+  annotations:
+    environment: "production"
+    security-tier: "critical"
+spec:
+  # For production, we enforce in all namespaces except system namespaces
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet"]  # Added StatefulSet for production
+    # Exclude only system namespaces in production
+    excludedNamespaces:
+      - "kube-system"
+      - "gatekeeper-system"
+      - "flux-system"
+  parameters:
+    # In production, require both readinessProbe and livenessProbe
+    probes: ["readinessProbe", "livenessProbe"]
+  
+  # Fully enforce in production environment
+  enforcementAction: deny 

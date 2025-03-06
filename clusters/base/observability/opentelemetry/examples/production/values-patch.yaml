@@ -1,0 +1,200 @@
+# Production Environment - High Availability Configuration for OpenTelemetry Collector
+# This patch provides robust resource allocation for production environments
+
+# Use combined mode with agent and gateway for production
+mode: daemonset
+
+# Add dedicated gateway collectors
+standalone:
+  enabled: true
+  replicaCount: 2
+  # Standard annotations for Prometheus scraping
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8888"
+
+# Production resource requirements for agent
+resources:
+  requests:
+    cpu: 200m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Production resources for gateway collectors
+standalone:
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+
+# Production Configuration
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+    
+    # Comprehensive metrics collection for production
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: 'otel-collector'
+            scrape_interval: 30s
+            static_configs:
+              - targets: ['${MY_POD_IP}:8888']
+          - job_name: 'k8s-pods'
+            kubernetes_sd_configs:
+              - role: pod
+            relabel_configs:
+              - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+                action: keep
+                regex: true
+              - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+                action: replace
+                target_label: __metrics_path__
+                regex: (.+)
+              - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+                action: replace
+                regex: ([^:]+)(?::\d+)?;(\d+)
+                replacement: $1:$2
+                target_label: __address__
+              - action: labelmap
+                regex: __meta_kubernetes_pod_label_(.+)
+              - source_labels: [__meta_kubernetes_namespace]
+                action: replace
+                target_label: kubernetes_namespace
+              - source_labels: [__meta_kubernetes_pod_name]
+                action: replace
+                target_label: kubernetes_pod_name
+    
+    # Comprehensive kubeletstats collection
+    kubeletstats:
+      collection_interval: 30s
+      auth_type: "serviceAccount"
+      endpoint: "${env:NODE_IP}:10250"
+      metric_groups:
+        - container
+        - pod
+        - node
+        - volume
+      
+    # Add hostmetrics for further system monitoring
+    hostmetrics:
+      collection_interval: 60s
+      scrapers:
+        cpu:
+        disk:
+        load:
+        filesystem:
+        memory:
+        network:
+        paging:
+        process:
+  
+  processors:
+    # Optimized batch settings for production
+    batch:
+      timeout: 15s
+      send_batch_size: 2048
+
+    # Memory limiter for resource control
+    memory_limiter:
+      check_interval: 5s
+      limit_mib: 400
+    
+    # Comprehensive resource detection
+    resource:
+      detectors: [env, system, ec2, gcp]
+      attributes:
+        - key: deployment.environment
+          value: production
+          action: insert
+    
+    # Filter unnecessary metrics to reduce load
+    filter:
+      metrics:
+        exclude:
+          match_type: regexp
+          metric_names:
+            - prometheus\..*buffer_capacity.*
+            - prometheus\..*buffer_size.*
+    
+    # Metrics transformation for production
+    metricstransform:
+      transforms:
+        - include: .*
+          action: update
+          operations:
+            - action: add_label
+              new_label: cluster
+              new_value: production
+  
+  exporters:
+    # Configure prometheus exporter
+    prometheus:
+      endpoint: 0.0.0.0:8889
+      namespace: otel
+      const_labels:
+        environment: production
+      
+    # Production logging (minimal)
+    logging:
+      verbosity: basic
+      
+    # Configure otlp exporter for prometheus integration
+    otlp:
+      endpoint: prometheus-server.observability.svc.cluster.local:9090
+      tls:
+        insecure: false
+        cert_file: /etc/ssl/certs/prometheus-cert.pem
+        
+    # Configure S3 exporter with secure credentials
+    s3:
+      region: us-east-1
+      access_key: ${S3_ACCESS_KEY}  # Using secret reference
+      secret_key: ${S3_SECRET_KEY}  # Using secret reference
+      endpoint: minio.minio-system:9000
+      bucket: tempo-production
+      path: traces-production
+      s3_force_path_style: true
+      insecure: false
+      
+    # Add OTLP HTTP exporter for NewRelic
+    otlphttp:
+      endpoint: https://otlp.nr-data.net:4318
+      headers:
+        api-key: ${NEWRELIC_API_KEY}
+      
+  service:
+    extensions: [health_check, pprof, zpages]
+    pipelines:
+      # Comprehensive pipeline structure for production
+      metrics:
+        receivers: [otlp, prometheus, kubeletstats, hostmetrics]
+        processors: [memory_limiter, filter, resource, metricstransform, batch]
+        exporters: [prometheus, otlp]
+      traces:
+        receivers: [otlp]
+        processors: [memory_limiter, resource, batch]
+        exporters: [s3, otlphttp]
+      logs:
+        receivers: [otlp]
+        processors: [memory_limiter, resource, batch]
+        exporters: [otlphttp]
+
+# Enable all extensions
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  pprof:
+    endpoint: 0.0.0.0:1777
+  zpages:
+    endpoint: 0.0.0.0:55679 

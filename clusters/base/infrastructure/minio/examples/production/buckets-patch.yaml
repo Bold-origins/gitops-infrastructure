@@ -1,0 +1,85 @@
+---
+# Production Environment: Bucket Configuration Patch
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-bucket-setup
+  namespace: minio
+  annotations:
+    backup.velero/include: "true"
+    critical-job: "true"
+spec:
+  backoffLimit: 5
+  template:
+    metadata:
+      labels:
+        critical-job: "true"
+    spec:
+      containers:
+      - name: mc
+        image: minio/mc:RELEASE.2023-01-28T20-29-38Z  # Pin to specific version for production
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Wait for MinIO to be ready
+          echo "Waiting for MinIO server to be ready..."
+          until mc alias set myminio http://minio:9000 minioadmin minioadmin; do
+            sleep 10
+          done
+          
+          # Create production environment buckets
+          for BUCKET in loki thanos prometheus tempo logs backups archives metrics config-backups reports audit customer-data; do
+            if mc ls myminio/$BUCKET > /dev/null 2>&1; then
+              echo "Bucket '$BUCKET' already exists, skipping creation."
+            else
+              echo "Creating bucket '$BUCKET'..."
+              mc mb myminio/$BUCKET
+              # Use private policy for production
+              mc policy set private myminio/$BUCKET
+            fi
+          done
+          
+          # Configure versioning for critical buckets
+          echo "Enabling versioning for critical buckets..."
+          mc version enable myminio/config-backups
+          mc version enable myminio/customer-data
+          mc version enable myminio/audit
+          
+          # Long retention for production environment
+          echo "Setting retention policy for production environment..."
+          mc ilm add --expiry-days 90 myminio/logs
+          mc ilm add --expiry-days 90 myminio/loki
+          mc ilm add --expiry-days 365 myminio/prometheus
+          mc ilm add --expiry-days 90 myminio/tempo
+          mc ilm add --expiry-days 365 myminio/thanos
+          mc ilm add --expiry-days 30 myminio/reports
+          
+          # Set up replication for critical data (if secondary MinIO exists)
+          # echo "Setting up replication..."
+          # mc admin bucket remote add myminio destminio http://minio-secondary:9000 accessKey secretKey
+          # mc replicate add myminio/customer-data --remote-bucket destminio/customer-data-backup
+          
+          echo "Production bucket setup completed!"
+        # Higher resource limits for production
+        resources:
+          limits:
+            cpu: 500m
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+      # Security context for production
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+      # Node affinity for optimal placement
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/os
+                operator: In
+                values:
+                - linux 

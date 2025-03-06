@@ -1,0 +1,103 @@
+# Production Environment - Network Policy Configuration for Flux
+# This patch configures strict network policies for production environment
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-flux-outbound
+  namespace: flux-system
+  annotations:
+    environment: "production"
+    security-tier: "critical"
+spec:
+  # Strict production network policy with explicit allowed destinations
+  # This ensures Flux can only reach necessary external services
+  egress:
+  # Allow outbound traffic to permitted public repositories
+  - to:
+    - ipBlock:
+        # Allow GitHub, GitLab, etc. but no private networks
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8     # RFC 1918 private networks
+        - 172.16.0.0/12  # RFC 1918 private networks
+        - 192.168.0.0/16 # RFC 1918 private networks
+        - 169.254.0.0/16 # Link-local
+        - 127.0.0.0/8    # Localhost
+    ports:
+    - port: 443
+      protocol: TCP
+    - port: 80
+      protocol: TCP
+  
+  # Allow DNS resolution
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+      
+  # Allow traffic to monitoring namespace
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 9090  # Prometheus
+      protocol: TCP
+    - port: 3000  # Grafana
+      protocol: TCP
+    - port: 9093  # Alertmanager
+      protocol: TCP
+      
+  # Allow traffic to other flux components
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: flux-system
+    ports:
+    - port: 9292 # Source Controller
+      protocol: TCP
+    - port: 8080 # Notification Controller
+      protocol: TCP
+    - port: 8081 # Kustomize Controller
+      protocol: TCP
+    - port: 8082 # Helm Controller
+      protocol: TCP
+---
+# Add ingress policy for production
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-flux-inbound
+  namespace: flux-system
+  annotations:
+    environment: "production"
+    security-tier: "critical"
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/part-of: flux
+  policyTypes:
+  - Ingress
+  ingress:
+  # Allow prometheus to scrape metrics
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 8080
+      protocol: TCP
+    - port: 9090
+      protocol: TCP
+    - port: 9292
+      protocol: TCP
+  # Allow flux components to communicate with each other
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: flux-system
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/part-of: flux 

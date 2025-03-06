@@ -1,0 +1,16 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault
+  namespace: vault
+spec:
+  replicas: 1  # Ensure single replica for local
+  template:
+    spec:
+      containers:
+      - name: vault
+        env:
+        - name: VAULT_DEV_ROOT_TOKEN_ID
+          value: "root"  # Local development token
+        - name: VAULT_DEV_LISTEN_ADDRESS
+          value: "0.0.0.0:8200" 

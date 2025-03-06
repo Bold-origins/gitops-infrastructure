@@ -1,0 +1,36 @@
+# Staging Environment - Network Policy Configuration for Flux
+# This patch configures standard network policies for staging environment
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-flux-outbound
+  namespace: flux-system
+  annotations:
+    environment: "staging"
+spec:
+  # Standard staging network policy with restrictions on private networks
+  # but allowing access to public repositories and services
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8     # RFC 1918 private networks
+        - 172.16.0.0/12  # RFC 1918 private networks
+        - 192.168.0.0/16 # RFC 1918 private networks
+  # Allow DNS resolution
+  - ports:
+    - port: 53
+      protocol: UDP
+    - port: 53
+      protocol: TCP
+  # Additional egress rules for monitoring
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+    ports:
+    - port: 9090  # Prometheus
+      protocol: TCP
+    - port: 3000  # Grafana 

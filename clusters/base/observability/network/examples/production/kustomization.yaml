@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Reference the base network configuration
+resources:
+  - ../../../network
+
+# Common labels for all resources
+commonLabels:
+  environment: production
+  tier: observability
+  criticality: high
+
+# Common annotations for production environment
+commonAnnotations:
+  environment.type: "production"
+  monitoring.enabled: "true"
+  backup.enabled: "true"
+  security-tier: "critical"
+  pagerduty.enabled: "true"
+
+# Apply the policy patches
+patchesStrategicMerge:
+  - flux-service-monitor-patch.yaml
+  - flux-alerts-patch.yaml
+  - flux-network-policy-patch.yaml 

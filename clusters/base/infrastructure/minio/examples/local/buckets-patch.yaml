@@ -1,0 +1,48 @@
+---
+# Local Environment: Bucket Configuration Patch
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: minio-bucket-setup
+  namespace: minio
+spec:
+  template:
+    spec:
+      containers:
+        - name: mc
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # Wait for MinIO to be ready
+              echo "Waiting for MinIO server to be ready..."
+              until mc alias set myminio http://minio:9000 minioadmin minioadmin; do
+                sleep 5
+              done
+
+              # Create local development buckets
+              for BUCKET in loki thanos prometheus tempo logs backups test-bucket dev-bucket; do
+                if mc ls myminio/$BUCKET > /dev/null 2>&1; then
+                  echo "Bucket '$BUCKET' already exists, skipping creation."
+                else
+                  echo "Creating bucket '$BUCKET'..."
+                  mc mb myminio/$BUCKET
+                  # Public policy for local development ease
+                  mc policy set public myminio/$BUCKET
+                fi
+              done
+
+              # Short retention for local environment to save space
+              echo "Setting short retention policy for local environment..."
+              mc ilm add --expiry-days 7 myminio/logs
+              mc ilm add --expiry-days 7 myminio/loki
+
+              echo "Local bucket setup completed!"
+          # Lower resource limits for local environment
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi

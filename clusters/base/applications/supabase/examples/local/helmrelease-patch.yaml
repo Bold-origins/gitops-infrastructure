@@ -1,0 +1,36 @@
+# Local Environment - HelmRelease Configuration for Supabase
+# This patch configures the HelmRelease for local development
+
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: supabase
+  namespace: supabase
+  labels:
+    environment: local
+    tier: applications
+  annotations:
+    # Force certain labels to be added to all resources
+    helm.toolkit.fluxcd.io/common-labels: |
+      app: supabase
+      environment: local
+      tier: applications
+spec:
+  # More frequent reconciliation for local development
+  interval: 5m
+  # Shorter timeout for local development
+  timeout: 5m
+  # Keep history limited in local environment
+  maxHistory: 3
+  
+  install:
+    remediation:
+      retries: 3
+    createNamespace: true
+    
+  upgrade:
+    # Faster remediation for local environment
+    remediation:
+      retries: 3
+      remediateLastFailure: true
+    cleanupOnFail: true 

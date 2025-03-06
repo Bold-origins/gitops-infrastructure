@@ -4,11 +4,12 @@
 
 **Project Name:** Local Kubernetes Cluster  
 **Current Status:** Development Phase  
-**Last Updated:** [Current Date]
+**Last Updated:** 2025-03-11
 
 ## Completed Features
 
 ### Core Infrastructure
+
 - [x] Basic Minikube cluster setup with resources provisioning
 - [x] Integration of cert-manager for certificate management
 - [x] Integration of Sealed Secrets for encrypted secrets
@@ -20,6 +21,7 @@
 - [x] Basic security configuration and policies
 
 ### Monitoring & Observability
+
 - [x] Prometheus setup for metrics collection
 - [x] Grafana deployment with basic dashboards
 - [x] Alertmanager configuration for alert routing
@@ -27,33 +29,41 @@
 - [x] Basic OpenTelemetry setup for distributed tracing
 
 ### Automation & Tooling
+
 - [x] Script for Minikube cluster setup
 - [x] Script for environment verification
 - [x] Script for Vault reset and initialization
 - [x] Script for cluster health checks
 - [x] Script for observability stack setup
+- [x] Scripts for GitOps refactoring automation
+- [x] Verification and cleanup scripts for environment management
 
 ### Documentation
+
 - [x] Project Requirements Document (PRD)
 - [x] App Flow Document
 - [x] Tech Stack Document
 - [x] Basic README with quick start guide
+- [x] GitOps workflow documentation
 
 ## In-Progress Features
 
 ### Infrastructure Enhancements
-- [ ] Integration of Supabase for database and authentication services (80% complete)
+
+- [ ] Integration of Supabase for database and authentication services (90% complete)
 - [ ] Advanced policy configurations for OPA Gatekeeper (50% complete)
 - [ ] Fine-tuning of resource requests/limits for all components (40% complete)
 - [ ] Implementation of network policies for enhanced security (30% complete)
 
 ### Monitoring & Observability Improvements
+
 - [ ] Custom dashboards for component-specific monitoring (60% complete)
 - [ ] Enhanced alert rules and notifications (50% complete)
 - [ ] Complete OpenTelemetry instrumentation (30% complete)
 - [ ] Metrics retention and storage optimization (25% complete)
 
 ### Documentation & Examples
+
 - [ ] Comprehensive troubleshooting guides (70% complete)
 - [ ] Component-specific documentation (50% complete)
 - [ ] Example application deployment guides (40% complete)
@@ -62,6 +72,7 @@
 ## Planned Features (Not Started)
 
 ### Infrastructure Extensions
+
 - [ ] Multi-cluster management capabilities
 - [ ] External authentication system integration
 - [ ] Backup and disaster recovery solutions
@@ -69,12 +80,14 @@
 - [ ] Additional policy templates and constraints
 
 ### Development Experience
+
 - [ ] Development workflow integration (CI/CD pipelines)
 - [ ] Local-to-cloud deployment paths
 - [ ] IDE integrations for Kubernetes development
 - [ ] Advanced debugging tools integration
 
 ### Documentation & Training
+
 - [ ] Video tutorials for setup and usage
 - [ ] Interactive learning guides
 - [ ] Advanced use case documentation
@@ -82,55 +95,82 @@
 
 ## Current Blockers & Issues
 
-| Issue | Description | Severity | Status |
-|-------|-------------|----------|--------|
-| Resource constraints | Minikube performance on lower-end machines | Medium | Investigating alternatives |
-| Certificate handling | Occasional issues with cert-manager certificate renewal | Low | Under investigation |
-| Vault initialization | Intermittent issues during initial setup | Medium | Working on improved script |
-| Dashboard access | Occasional connection issues to Kubernetes Dashboard | Low | Troubleshooting |
+| Issue                | Description                                             | Severity | Status                     |
+| -------------------- | ------------------------------------------------------- | -------- | -------------------------- |
+| Resource constraints | Minikube performance on lower-end machines              | Medium   | Investigating alternatives |
+| Certificate handling | Occasional issues with cert-manager certificate renewal | Low      | Under investigation        |
+| Vault initialization | Intermittent issues during initial setup                | Medium   | Working on improved script |
+| Dashboard access     | Occasional connection issues to Kubernetes Dashboard    | Low      | Troubleshooting            |
 
 ## Timeline & Milestones
 
+### Milestone 0: Repository Structure Alignment (GitOps)
+
+**Target Date:** 2025-03-11
+**Status:** 100% Complete ✓
+**Key Deliverables:**
+
+- Base configuration directory structure ✓
+- Base documentation completed ✓ 
+- Local environment refactored to use Kustomize overlays ✓
+  - Infrastructure components (100% complete) ✓
+  - Observability components (100% complete) ✓
+  - Policy components (100% complete) ✓
+  - Application components (100% complete) ✓
+- Directory structure for staging and production environments (pending)
+- Promotion workflow scripts (pending)
+- Updated documentation for GitOps workflow ✓
+
 ### Milestone 1: Core Infrastructure Setup ✓
+
 **Target Date:** Completed
 **Status:** Completed
 **Key Deliverables:**
+
 - Basic cluster setup
 - Core security components
 - Ingress configuration
 - Monitoring foundation
 
 ### Milestone 2: Observability Enhancement
+
 **Target Date:** In Progress
-**Status:** 70% Complete
+**Status:** 37% Complete
 **Key Deliverables:**
+
 - Complete metrics collection
 - Log aggregation
 - Tracing implementation
 - Custom dashboards
 
 ### Milestone 3: Security Hardening
+
 **Target Date:** Q2 2023
-**Status:** 40% Complete
+**Status:** 37% Complete
 **Key Deliverables:**
+
 - Advanced policies
 - Network policies
 - Security scanning
 - Compliance checks
 
 ### Milestone 4: Development Experience
+
 **Target Date:** Q3 2023
 **Status:** Planning
 **Key Deliverables:**
+
 - IDE integration
 - CI/CD pipeline examples
 - Developer onboarding
 - Example applications
 
 ### Milestone 5: Documentation Completion
+
 **Target Date:** Q3 2023
-**Status:** 35% Complete
+**Status:** 37% Complete
 **Key Deliverables:**
+
 - Complete guides
 - Troubleshooting documentation
 - Architecture documentation
@@ -138,15 +178,115 @@
 
 ## Next Steps
 
-1. Complete Supabase integration for database services
-2. Finalize custom Grafana dashboards for component monitoring
-3. Enhance security policies with additional OPA constraints
-4. Complete component-specific documentation
-5. Implement network policies for all namespaces
+1. Milestone 0: Complete the remaining GitOps structure alignment tasks:
+   - Create staging directory structure following the same pattern as local
+   - Create production directory structure
+   - Implement promotion workflow between environments
+   - Document promotion process and branching strategy
+   - Create architecture diagrams for the GitOps structure
+
+2. Complete Supabase integration for database services
+3. Finalize custom Grafana dashboards for component monitoring
+4. Enhance security policies with additional OPA constraints
+5. Complete component-specific documentation
+6. Implement network policies for all namespaces
+
+## Recent Achievements
+
+### Scripts Reorganization
+
+- Reorganized all scripts into a cleaner, more maintainable structure:
+  - `/scripts/gitops/` - Scripts for GitOps workflow and refactoring
+  - `/scripts/cluster/` - Scripts for cluster management
+  - `/scripts/components/` - Component-specific scripts (Vault, Supabase, etc.)
+  - `/scripts/legacy/` - Deprecated or infrequently used scripts
+  - `/scripts/promotion/` - Placeholder for upcoming promotion workflow
+- Created detailed README documentation for each script directory
+- Removed redundant and obsolete scripts
+- Prepared directory structure for upcoming promotion workflow implementation
+
+### GitOps Structure Implementation (Milestone 0)
+
+- Successfully completed refactoring of all 16 components to use Kustomize overlays:
+  - 7 infrastructure components (cert-manager, vault, sealed-secrets, ingress, metallb, gatekeeper, minio)
+  - 6 observability components (loki, prometheus, grafana, opentelemetry, common, network)
+  - 2 policy components (constraints, templates)
+  - 1 application component (supabase)
+- Established clean GitOps workflow with base configuration and environment-specific overlays
+- Created comprehensive verification and cleanup tools
+- Achieved complete alignment with planned repository structure
+- Moved supabase from infrastructure to applications to maintain proper structure
+
+### Directory Structure Standardization
+
+- Unified observability and monitoring directories to follow consistent naming
+- Moved network monitoring components to observability/network
+- Eliminated namespace confusion by standardizing on "observability" namespace
+- Improved alignment between local environment and base configuration
+- Streamlined kustomization structure using modern patches syntax
+
+### Verification and Cleanup
+
+- Developed comprehensive verification tools to ensure proper refactoring
+- Implemented automated cleanup process for redundant files
+- Established systematic workflow for refactoring components
+- Created detailed progress tracking documentation
+
+## Automation and Tooling
+
+### GitOps Refactoring Tooling
+
+To streamline the refactoring process, we've developed several automation scripts:
+
+- **refactor-workflow.sh**: End-to-end workflow script for refactoring components
+  - Backs up existing configuration
+  - Creates patches for local-specific settings
+  - Tests the refactored component
+  - Cleans up redundant files
+  - Updates progress tracking documents
+  
+- **refactor-component.sh**: Core refactoring script (used by the workflow)
+  - Converts components to reference base configuration
+  - Creates template patch files for common resource types
+  - Preserves local-specific values
+  
+- **cleanup-local-refactoring.sh**: Removes redundant files after refactoring
+  - Backs up removed files
+  - Preserves only necessary configuration
+  - Handles all component types automatically
+  
+- **verify-local-refactoring.sh**: Verifies correct refactoring
+  - Checks all components across all types
+  - Ensures proper reference to base
+  - Identifies redundant files
+  - Validates with kustomize
+  - Provides detailed report and recommendations
+
+These tools ensure consistent refactoring across all components and maintain proper progress tracking.
+
+### GitOps Workflow
+
+Our GitOps workflow follows these principles:
+
+1. **Infrastructure as Code**:
+   - All environment configurations stored in Git
+   - Kustomize used for environment-specific overlays
+   - Common configurations stored in base directory
+   - Standardized naming across environments (observability over monitoring)
+
+2. **Pull-Based Deployments**:
+   - Flux monitors repository for changes
+   - Changes to environment directories trigger deployments
+   - No direct cluster modifications outside the GitOps workflow
+
+3. **Progressive Deployment**:
+   - Changes flow from local → staging → production
+   - Each environment serves as validation for the next
+   - Promotion scripts facilitate proper configuration transfer
 
 ## Contributors
 
 - Core Infrastructure Team
 - Observability Team
 - Documentation Team
-- Security Team 
+- Security Team

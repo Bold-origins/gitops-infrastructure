@@ -1,0 +1,47 @@
+# Production Environment - High Resources with HA
+replicas: 3
+
+# Fast audit interval for production
+auditInterval: 15
+
+# Less verbose logging for production
+logLevel: WARNING
+
+# Higher resources for production environment
+controllerManager:
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+audit:
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+# Comprehensive monitoring for production
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8888"
+  environment: "production"
+  backup.velero/include: "true"
+  alert-tier: "critical"
+
+# Stricter validation timeout for production
+validatingWebhookTimeoutSeconds: 2
+
+# Only exempt the absolute minimum namespaces
+exemptNamespaces:
+  - kube-system
+  - gatekeeper-system
+
+# Ensure all metrics are enabled for production monitoring
+emitAdmissionEvents: true
+emitAuditEvents: true 

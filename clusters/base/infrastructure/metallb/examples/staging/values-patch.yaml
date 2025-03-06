@@ -1,0 +1,44 @@
+# Staging Environment MetalLB Configuration
+# Moderate resource allocation for staging environment
+
+# Standard logging level for staging
+logLevel: info
+
+# Moderate resources for staging environment
+speaker:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 96Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  
+  # Add basic monitoring
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "7472"
+
+controller:
+  resources:
+    limits:
+      cpu: 100m
+      memory: 96Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+  
+  # Single replica for staging (could be 2 for better availability)
+  replicaCount: 1
+  
+  # Add basic monitoring
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "7472"
+
+# Enable basic metrics for staging monitoring
+prometheus:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus 

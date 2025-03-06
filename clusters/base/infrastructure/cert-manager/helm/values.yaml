@@ -1,0 +1,69 @@
+# Values for cert-manager Helm chart
+# Reference: https://github.com/cert-manager/cert-manager/tree/master/deploy/charts/cert-manager
+# This is the BASE configuration - environment-specific overlays should customize as needed
+
+# ENVIRONMENT CHOICE: Leave true for all environments unless you have a separate CRD installation method
+installCRDs: true
+
+global:
+  leaderElection:
+    namespace: cert-manager
+
+# ENVIRONMENT-SPECIFIC: Adjust replica count based on environment
+# - local/dev: 1 replica (default)
+# - staging: 1-2 replicas
+# - production: 2+ replicas for high availability
+replicaCount: 1
+
+# ENVIRONMENT-SPECIFIC: Adjust resource limits based on environment
+# These defaults are suitable for local/development environments
+# For production, consider increasing these values
+resources:
+  requests:
+    cpu: 10m     # production: consider 100m+
+    memory: 32Mi # production: consider 128Mi+
+  limits:
+    cpu: 100m     # production: consider 300m+
+    memory: 64Mi  # production: consider 256Mi+
+
+# ENVIRONMENT-SPECIFIC: Monitoring configuration
+# For production/staging with Prometheus, enable serviceMonitor
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: false  # Set to true in environments with Prometheus Operator
+
+# ENVIRONMENT-SPECIFIC: Adjust webhook resources based on environment
+# Webhook is critical for validating certificates - ensure adequate resources
+webhook:
+  enabled: true
+  resources:
+    requests:
+      cpu: 10m     # production: consider 50m+
+      memory: 32Mi # production: consider 64Mi+
+    limits:
+      cpu: 100m     # production: consider 200m+
+      memory: 64Mi  # production: consider 128Mi+
+
+# ENVIRONMENT-SPECIFIC: Adjust cainjector resources based on environment
+cainjector:
+  enabled: true
+  resources:
+    requests:
+      cpu: 10m     # production: consider 50m+
+      memory: 32Mi # production: consider 64Mi+
+    limits:
+      cpu: 100m     # production: consider 200m+
+      memory: 64Mi  # production: consider 128Mi+
+
+# DNS configuration for ACME DNS01 challenges
+# These settings can remain the same across environments
+extraArgs:
+  - --dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53
+  - --dns01-recursive-nameservers-only
+
+# ENVIRONMENT-SPECIFIC: Consider adding additional annotations in production
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/path: "/metrics"
+  prometheus.io/port: "9402"

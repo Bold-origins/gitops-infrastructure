@@ -1,0 +1,104 @@
+---
+# This is a HelmRelease Custom Resource for Flux v2 GitOps
+# ENVIRONMENT-SPECIFIC: This may need adjustment based on your GitOps implementation
+#
+# Installation Options:
+# 1. Flux v2: Use this HelmRelease as is (adjust sourceRef namespace if needed)
+# 2. ArgoCD: Convert to Application CR or use helm chart directly
+# 3. Manual: Use helm CLI with values
+#    helm install ingress-nginx ingress-nginx/ingress-nginx --values values.yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ingress-nginx
+  namespace: ingress-nginx
+  annotations:
+    # ENVIRONMENT-SPECIFIC: These annotations can be customized in environment overlays
+    environment.config/description: "NGINX Ingress Controller for handling ingress traffic"
+spec:
+  # ENVIRONMENT-SPECIFIC: Adjust interval based on environment
+  # - local/dev: shorter intervals (5m)
+  # - staging/prod: longer intervals (15m+)
+  interval: 5m
+  chart:
+    spec:
+      chart: ingress-nginx
+      # ENVIRONMENT-SPECIFIC: Consider pinning to specific version in production
+      version: "4.4.x"
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx
+        # ENVIRONMENT-SPECIFIC: Update namespace if needed for your GitOps setup
+        namespace: flux-system
+  install:
+    crds: Skip
+    remediation:
+      # ENVIRONMENT-SPECIFIC: Consider increasing retries for production
+      retries: 3
+  upgrade:
+    remediation:
+      # ENVIRONMENT-SPECIFIC: Consider increasing retries for production
+      retries: 3
+  # ENVIRONMENT-SPECIFIC: These values should be overridden in environment overlays
+  values:
+    controller:
+      # ENVIRONMENT-SPECIFIC: Service type may differ per environment
+      # - local: NodePort or ClusterIP
+      # - staging/production: LoadBalancer
+      service:
+        type: LoadBalancer
+
+      # ENVIRONMENT-SPECIFIC: Enable metrics for environments with monitoring
+      # - local: typically disabled
+      # - staging/production: enable and configure ServiceMonitor
+      metrics:
+        enabled: false
+        serviceMonitor:
+          enabled: false
+          additionalLabels: {}
+
+      # ENVIRONMENT-SPECIFIC: Adjust resources based on environment
+      # - local: minimal resources
+      # - staging: medium resources
+      # - production: larger resources with higher limits
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        # limits: Consider setting appropriate limits in environment overlays
+
+      # ENVIRONMENT-SPECIFIC: Replica count should be customized per environment
+      # - local: 1 replica
+      # - staging: 1-2 replicas
+      # - production: 2+ replicas for HA
+      # replicaCount: 1
+
+      # ENVIRONMENT-SPECIFIC: Consider additional configurations for production
+      # config:
+      #   ssl-protocols: "TLSv1.2 TLSv1.3"
+      #   use-forwarded-headers: "true"
+
+      # ENVIRONMENT-SPECIFIC: SSL certificate handling
+      # extraArgs:
+      #   default-ssl-certificate: "cert-manager/wildcard-tls"
+
+    # ENVIRONMENT-SPECIFIC: Default backend typically not needed in local
+    defaultBackend:
+      enabled: false
+
+    # ENVIRONMENT-SPECIFIC: ServiceMonitor for Prometheus
+    serviceMonitor:
+      enabled: false
+
+  # This section handles ServiceMonitor resources - typically only needed in environments with monitoring
+  postRenderers:
+    - kustomize:
+        patches:
+          - target:
+              kind: ServiceMonitor
+              name: .*
+            patch: |
+              $patch: delete
+              kind: ServiceMonitor
+              metadata:
+                name: placeholder

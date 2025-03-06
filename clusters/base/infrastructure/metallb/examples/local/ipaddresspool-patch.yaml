@@ -1,0 +1,12 @@
+---
+# Local Environment: IP Address Pool Configuration
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: first-pool
+  namespace: metallb-system
+spec:
+  # Local environment IP range - typically aligned with local development network
+  # This range is for Minikube/Kind/local Kubernetes clusters
+  addresses:
+  - 192.168.49.100-192.168.49.200  # Adjust based on your Minikube/Kind IP range 

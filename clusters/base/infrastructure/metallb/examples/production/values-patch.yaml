@@ -1,0 +1,76 @@
+# Production Environment MetalLB Configuration
+# High resource allocation with HA setup for production
+
+# Minimal logging level for production
+logLevel: warning
+
+# Production-grade resources for speaker
+speaker:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+  
+  # Enable running on control plane nodes for HA in production
+  tolerations:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      effect: NoSchedule
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+      effect: NoSchedule
+  
+  # Comprehensive monitoring for production
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "7472"
+    alert-tier: "critical"
+    backup.velero/include: "true"
+
+controller:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 100m
+      memory: 64Mi
+  
+  # Multiple replicas for high availability in production
+  replicaCount: 2
+  
+  # Production-specific pod settings
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "7472"
+    alert-tier: "critical"
+    backup.velero/include: "true"
+  
+  # Configure pod disruption budget for production HA
+  pdb:
+    create: true
+    minAvailable: 1
+
+# Enable comprehensive metrics for production monitoring
+prometheus:
+  serviceMonitor:
+    enabled: true
+    additionalLabels:
+      release: prometheus
+    namespace: monitoring
+    interval: 30s
+
+# Enable BGP mode for production
+# (Should be aligned with the BGPAdvertisement in ipaddresspool-patch.yaml)
+bgpMode: true
+
+# Production-specific node affinity to ensure proper placement
+nodeSelector:
+  kubernetes.io/os: linux
+
+# PodSecurityPolicy for production security
+psp:
+  create: true 

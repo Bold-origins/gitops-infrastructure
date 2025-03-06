@@ -1,0 +1,89 @@
+# Staging Environment - Balanced Resources Configuration for Loki
+# This patch provides moderate resource allocation for staging environments
+
+loki:
+  # Enable authentication for staging environment
+  auth_enabled: true
+  
+  # Simple scalable deployment for staging
+  singleBinary:
+    replicas: 2
+  
+  # Moderate resource requirements for staging
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Staging storage configuration using MinIO
+  storage:
+    bucketNames:
+      chunks: loki-staging
+      ruler: loki-staging-rules
+      admin: loki-staging-admin
+    type: s3
+    s3:
+      endpoint: minio.minio-system:9000
+      region: us-east-1
+      # In staging, use proper secrets
+      secretAccessKey: ${S3_SECRET_KEY}
+      accessKeyId: ${S3_ACCESS_KEY}
+      s3ForcePathStyle: true
+      insecure: false
+  
+  # Disable persistence as we're using S3 storage
+  persistence:
+    enabled: false
+  
+  # Standard schema configuration
+  schemaConfig:
+    configs:
+      - from: 2020-05-15
+        store: boltdb-shipper
+        object_store: s3
+        schema: v11
+        index:
+          prefix: index_
+          period: 24h
+  
+  # Moderate log retention for staging
+  limits_config:
+    retention_period: 168h  # 7 days
+    
+  # Standard compaction for staging
+  compactor:
+    working_directory: /data/loki/compactor
+    compaction_interval: 10m
+    retention_enabled: true
+    
+  # Configure basic alerting for staging
+  ruler:
+    enabled: true
+    alertmanager_url: http://prometheus-alertmanager.observability.svc.cluster.local:9093
+
+# Promtail configuration with moderate resources
+promtail:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+      
+  # Configure Promtail to scrape more logs in staging
+  config:
+    snippets:
+      pipelineStages:
+        - docker: {}
+        - regex:
+            expression: '(level|lvl|severity)=(?P<level>\w+)'
+        - labels:
+            level:
+
+# Disable Grafana as it's deployed separately
+grafana:
+  enabled: false 

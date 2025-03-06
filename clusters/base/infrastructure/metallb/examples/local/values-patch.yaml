@@ -1,0 +1,32 @@
+# Local Environment MetalLB Configuration
+# Minimal resource allocation for local development
+
+# Enable debug logging for local development
+logLevel: debug
+
+# Minimal resources for local environment
+speaker:
+  resources:
+    limits:
+      cpu: 50m
+      memory: 64Mi
+    requests:
+      cpu: 25m
+      memory: 32Mi
+
+controller:
+  resources:
+    limits:
+      cpu: 50m
+      memory: 64Mi
+    requests:
+      cpu: 25m
+      memory: 32Mi
+  
+  # Single replica for local development
+  replicaCount: 1
+
+# Disable metrics for local development
+prometheus:
+  serviceMonitor:
+    enabled: false 

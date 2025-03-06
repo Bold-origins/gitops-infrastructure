@@ -1,0 +1,28 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: supabase
+  namespace: supabase
+  labels:
+    environment: local
+    team: infrastructure
+  annotations:
+    # Force certain labels to be added to all resources
+    helm.toolkit.fluxcd.io/common-labels: |
+      environment: local
+      team: infrastructure
+spec:
+  interval: 30m
+  timeout: 10m
+  install:
+    remediation:
+      retries: 1
+  upgrade:
+    remediation:
+      retries: 1
+      remediateLastFailure: true
+    cleanupOnFail: true
+  valuesFrom:
+    - kind: ConfigMap
+      name: supabase-values
+      valuesKey: values.yaml 

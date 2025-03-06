@@ -1,0 +1,42 @@
+# Staging Environment - Medium Resources
+replicas: 2
+
+# Standard audit interval
+auditInterval: 30
+
+# Standard logging level
+logLevel: INFO
+
+# Medium resources for staging environment
+controllerManager:
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 768Mi
+    requests:
+      cpu: 150m
+      memory: 384Mi
+
+audit:
+  resources:
+    limits:
+      cpu: 1500m
+      memory: 768Mi
+    requests:
+      cpu: 150m
+      memory: 384Mi
+
+# Enable monitoring integration
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8888"
+  environment: "staging"
+
+# Exempt namespaces - minimal list for staging
+exemptNamespaces:
+  - kube-system
+  - gatekeeper-system
+  - flux-system
+
+# Standard validation timeout
+validatingWebhookTimeoutSeconds: 3 
