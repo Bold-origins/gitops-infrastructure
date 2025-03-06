@@ -12,5 +12,6 @@ spec:
       - kube-system
       - flux-system
       - gatekeeper-system
+      - supabase
   parameters:
     labels: ["app", "team", "environment"] 
