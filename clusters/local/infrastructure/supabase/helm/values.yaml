@@ -1,8 +1,9 @@
 # Add global labels for all resources to comply with Gatekeeper policies
-commonLabels:
-  app: supabase
-  team: infrastructure
-  environment: local
+global:
+  labels:
+    app: supabase
+    team: infrastructure
+    environment: local
 
 secret:
   existingSecret: supabase-jwt

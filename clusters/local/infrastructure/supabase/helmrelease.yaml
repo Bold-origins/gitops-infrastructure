@@ -7,6 +7,12 @@ metadata:
     app: supabase
     environment: local
     team: infrastructure
+  annotations:
+    # Force certain labels to be added to all resources
+    helm.toolkit.fluxcd.io/common-labels: |
+      app: supabase
+      environment: local
+      team: infrastructure
 spec:
   interval: 30m
   chart:

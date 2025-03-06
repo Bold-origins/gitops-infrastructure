@@ -31,6 +31,9 @@ configMapGenerator:
   namespace: supabase
   files:
   - values.yaml=helm/values.yaml
+  # Add timestamp to ensure ConfigMap gets updated
+  literals:
+  - last_update_timestamp="2025-03-06T08:52:00Z"
 
 labels:
   - pairs:
