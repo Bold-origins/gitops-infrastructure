@@ -18,19 +18,22 @@ The **Local Kubernetes Cluster** provides developers with an environment closely
 ```
 clusters/               # Kubernetes manifests
 ├── local/              # Local environment overlays
-├── staging/            # Staging overlays (planned)
-├── production/         # Production overlays (planned)
-├── base/               # Shared base configurations (planned)
+│   ├── applications/   # Application deployments (Supabase, etc.)
+│   ├── infrastructure/ # Core infrastructure components
+│   ├── observability/  # Monitoring and logging stack
+│   └── policies/       # Security policies and governance
+├── base/               # Shared base configurations
+└── staging/            # Staging overlays (planned)
+└── production/         # Production overlays (planned)
 
 charts/                 # Helm charts
 └── example-app/        # Example application chart
 
 scripts/                # Automation scripts
-├── cluster-management/ # Cluster management tools
-├── connectivity/       # Port-forwarding and connectivity scripts
-├── diagnostics/        # Troubleshooting scripts
-├── setup-minikube.sh   # Local setup script
-├── verify-environment.sh # Environment validation
+├── cluster/           # Cluster management tools
+├── components/        # Component installation/management
+├── gitops/            # GitOps workflow automation
+├── promotion/         # Environment promotion scripts
 └── README.md           # Scripts documentation
 
 conext/                 # Project documentation
@@ -49,6 +52,7 @@ conext/                 # Project documentation
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) **v1.28+**
 - [Helm](https://helm.sh/docs/intro/install/) **v3.12+**
 - [Flux CLI](https://fluxcd.io/docs/installation/)
+- [kubeseal](https://github.com/bitnami-labs/sealed-secrets#installation) (for working with SealedSecrets)
 
 ### System Requirements
 
@@ -67,8 +71,8 @@ cd cluster
 ### 2. Set Up Minikube Environment
 
 ```bash
-chmod +x scripts/setup-minikube.sh
-./scripts/setup-minikube.sh
+chmod +x scripts/cluster/setup-minikube.sh
+./scripts/cluster/setup-minikube.sh
 ```
 
 Customize resources by editing the script if needed.
@@ -76,8 +80,8 @@ Customize resources by editing the script if needed.
 ### 3. Verify Environment
 
 ```bash
-chmod +x scripts/verify-environment.sh
-./scripts/verify-environment.sh
+chmod +x scripts/cluster/verify-environment.sh
+./scripts/cluster/verify-environment.sh
 ```
 
 Ensures Minikube and key resources are properly configured.
@@ -99,7 +103,7 @@ Update parameters (`--owner`, `--repository`, `--branch`) as necessary.
 Forward local cluster services:
 
 ```bash
-./scripts/connectivity/port-forward.sh
+./scripts/components/port-forward.sh
 ```
 
 ## 🌐 Accessing Web Interfaces
@@ -110,6 +114,7 @@ Forward local cluster services:
 - **Grafana**: https://grafana.local
 - **MinIO**: https://minio.local
 - **Alertmanager**: https://alertmanager.local
+- **Supabase**: https://supabase.local
 
 > **Note**: For `.local` addresses, add entries to `/etc/hosts` or configure local DNS.
 
@@ -137,41 +142,74 @@ Forward local cluster services:
 - Core Infrastructure (Minikube, Vault, OPA Gatekeeper, Ingress-Nginx, MetalLB, MinIO)
 - Monitoring & Observability (Prometheus, Grafana, Alertmanager, Loki, Basic OpenTelemetry)
 - Automation Scripts (`setup-minikube.sh`, `verify-environment.sh`, Vault management)
+- Supabase integration with secrets management
 
 ### In-Progress & Planned
 
-- Supabase integration
 - Enhanced OPA policies
 - Advanced observability dashboards
 - CI/CD integration
+- Staging and Production environments
 
-## 🔧 Utility Scripts
+## 💾 Applications
 
-- **setup-minikube.sh**: Configure Minikube.
-- **verify-environment.sh**: Validate setup.
-- **check_cluster.sh**: Diagnose cluster issues.
-- **Vault scripts**: Manage Vault setup/reset.
+### Supabase
 
-Detailed instructions in [`scripts/README.md`](scripts/README.md).
+The repository includes a fully configured Supabase deployment for local development:
+
+- **Configuration**: Located in `clusters/local/applications/supabase/`
+- **Secrets Management**: 
+  - Local development uses regular Kubernetes Secrets
+  - Production environments use SealedSecrets for secure secret management
+- **Components**: 
+  - PostgreSQL database
+  - Authentication services
+  - Storage (integrated with MinIO)
+  - API Gateway
+  - Admin Dashboard
+
+For more details, see [`clusters/local/applications/supabase/README.md`](clusters/local/applications/supabase/README.md).
 
 ## 🔐 Security
 
-- **Sealed Secrets**: Encrypt secrets in Git.
-- **HashiCorp Vault**: Advanced secret management.
-- **OPA Gatekeeper**: Policy enforcement.
-- **RBAC**: Granular Kubernetes permissions.
+### Dual Secrets Approach
+
+This project uses a dual approach to secrets management for different environments:
+
+1. **Local Development**: Uses plain Kubernetes Secrets for easy debugging and development
+   - Located in `clusters/local/applications/*/secrets/` directories
+
+2. **Production Environments**: Uses SealedSecrets for secure, encrypted storage in Git
+   - Located in `clusters/*/applications/*/sealed-secrets/` directories
+   - Encrypted with the cluster's public key
+   - Decrypted automatically by the SealedSecrets controller in the cluster
+
+Additional security components:
+
+- **HashiCorp Vault**: Advanced secret management with rotation capabilities
+- **OPA Gatekeeper**: Policy enforcement and governance
+- **RBAC**: Granular Kubernetes permissions
+- **Cert Manager**: Automated TLS certificate management
 
 ## 📊 Monitoring & Observability
 
-- **Prometheus**: Metrics and alerts.
-- **Grafana**: Visual dashboards.
-- **Alertmanager**: Alert routing.
-- **Loki**: Centralized logging.
-- **OpenTelemetry**: Distributed tracing.
+- **Prometheus**: Metrics collection and alerting
+- **Grafana**: Visual dashboards for monitoring
+- **Alertmanager**: Alert routing and notification
+- **Loki**: Centralized logging system
+- **OpenTelemetry**: Distributed tracing for applications
+
+## 🔧 Utility Scripts
+
+- **Cluster Management**: Configure and validate Minikube environment
+- **Component Management**: Install and configure individual components
+- **GitOps Workflows**: Automate GitOps processes
+- **Promotion Scripts**: Safely promote changes between environments
+
+Detailed instructions in [`scripts/README.md`](scripts/README.md).
 
 ## 📚 Additional Documentation
 
-- [Deployment_Workflow_Plan.md](Deployment_Workflow_Plan.md)
 - [APP_FLOW_DOCUMENT.md](conext/APP_FLOW_DOCUMENT.md)
 - [PROGRESS_DOCUMENT.md](conext/PROGRESS_DOCUMENT.md)
 - [PROJECT_REQUIREMENTS_DOCUMENT.md](conext/PROJECT_REQUIREMENTS_DOCUMENT.md)
@@ -191,8 +229,9 @@ Licensed under **MIT License**. See [LICENSE](LICENSE).
 ## 🔍 Troubleshooting
 
 - **Minikube not starting**: Check Docker or Hypervisor settings.
-- **Flux not reconciling**: Run `flux reconcile`.
-- **Logs**: Use `kubectl logs -n <namespace> <pod>` or Loki interface.
+- **Flux not reconciling**: Run `flux reconcile kustomization --all`.
+- **SealedSecrets issues**: Ensure the correct public key is being used.
+- **Logs**: Use `kubectl logs -n <namespace> <pod>` or the Loki/Grafana interface.
 
 ---
 
