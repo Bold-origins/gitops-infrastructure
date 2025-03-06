@@ -58,4 +58,54 @@ rm my-secret.yaml
 ## References
 
 - [SealedSecrets GitHub](https://github.com/bitnami-labs/sealed-secrets)
-- [SealedSecrets Documentation](https://github.com/bitnami-labs/sealed-secrets#overview) 
+- [SealedSecrets Documentation](https://github.com/bitnami-labs/sealed-secrets#overview)
+
+# Supabase Secrets for Local Development
+
+## Local Development Approach
+
+For local development, we're using regular Kubernetes secrets instead of sealed secrets. This makes it easier to work with secrets during development and testing.
+
+The actual secret files are stored in the `clusters/local/applications/supabase/secrets/` directory, which includes:
+- analytics-secret.yaml
+- db-secret.yaml
+- jwt-secret.yaml
+- s3-secret.yaml
+- dashboard-secret.yaml
+- smtp-secret.yaml
+
+## Switching to Sealed Secrets
+
+In non-local environments (staging, production), you would use sealed secrets instead. To create sealed secrets for these environments:
+
+1. Start with the template files from the base configuration:
+   ```
+   clusters/base/applications/supabase/sealed-secrets/template-*.yaml
+   ```
+
+2. Create actual secret files with your real credentials
+
+3. Use kubeseal to encrypt them:
+   ```bash
+   # Example for encrypting a db secret
+   kubeseal --format yaml < my-real-db-secret.yaml > sealed-db-secret.yaml
+   ```
+
+4. Store the sealed secrets in the sealed-secrets directory of the appropriate environment
+
+5. Update the kustomization.yaml file to reference these sealed secrets instead of plain secrets
+
+## Differences between Local and Other Environments
+
+| Environment | Secret Type | Purpose |
+|-------------|------------|---------|
+| Local       | Plain Kubernetes Secrets | Development, ease of use |
+| Staging     | Sealed Secrets | Testing in a secured environment |
+| Production  | Sealed Secrets | Secure production deployment |
+
+## Important Security Note
+
+NEVER commit actual production secrets to Git, even in the local environment. The secrets provided in the local directory contain only dummy values suitable for development.
+
+For more information on sealed secrets and the template approach, see the README in the base directory:
+`clusters/base/applications/supabase/sealed-secrets/README.md` 
