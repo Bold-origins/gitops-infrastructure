@@ -15,14 +15,14 @@ The current Supabase deployment is configured to use the direct secrets approach
 
 This directory contains template SealedSecrets for all necessary Supabase credentials:
 
-| Filename | Secret Name | Purpose |
-|----------|-------------|---------|
-| `sealed-jwt-secret.yaml` | `supabase-jwt` | JWT authentication secrets |
-| `sealed-db-secret.yaml` | `supabase-db` | Database credentials |
-| `sealed-dashboard-secret.yaml` | `supabase-dashboard` | Dashboard admin credentials |
-| `sealed-smtp-secret.yaml` | `supabase-smtp` | SMTP email service credentials |
-| `sealed-analytics-secret.yaml` | `supabase-analytics` | Analytics API key |
-| `sealed-s3-secret.yaml` | `supabase-s3` | S3/MinIO connectivity secrets |
+| Filename                       | Secret Name          | Purpose                        |
+| ------------------------------ | -------------------- | ------------------------------ |
+| `sealed-jwt-secret.yaml`       | `supabase-jwt`       | JWT authentication secrets     |
+| `sealed-db-secret.yaml`        | `supabase-db`        | Database credentials           |
+| `sealed-dashboard-secret.yaml` | `supabase-dashboard` | Dashboard admin credentials    |
+| `sealed-smtp-secret.yaml`      | `supabase-smtp`      | SMTP email service credentials |
+| `sealed-analytics-secret.yaml` | `supabase-analytics` | Analytics API key              |
+| `sealed-s3-secret.yaml`        | `supabase-s3`        | S3/MinIO connectivity secrets  |
 
 ## Important Notes
 
@@ -67,6 +67,7 @@ rm my-secret.yaml
 For local development, we're using regular Kubernetes secrets instead of sealed secrets. This makes it easier to work with secrets during development and testing.
 
 The actual secret files are stored in the `clusters/local/applications/supabase/secrets/` directory, which includes:
+
 - analytics-secret.yaml
 - db-secret.yaml
 - jwt-secret.yaml
@@ -79,6 +80,7 @@ The actual secret files are stored in the `clusters/local/applications/supabase/
 In non-local environments (staging, production), you would use sealed secrets instead. To create sealed secrets for these environments:
 
 1. Start with the template files from the base configuration:
+
    ```
    clusters/base/applications/supabase/sealed-secrets/template-*.yaml
    ```
@@ -86,6 +88,7 @@ In non-local environments (staging, production), you would use sealed secrets in
 2. Create actual secret files with your real credentials
 
 3. Use kubeseal to encrypt them:
+
    ```bash
    # Example for encrypting a db secret
    kubeseal --format yaml < my-real-db-secret.yaml > sealed-db-secret.yaml
@@ -97,15 +100,15 @@ In non-local environments (staging, production), you would use sealed secrets in
 
 ## Differences between Local and Other Environments
 
-| Environment | Secret Type | Purpose |
-|-------------|------------|---------|
-| Local       | Plain Kubernetes Secrets | Development, ease of use |
-| Staging     | Sealed Secrets | Testing in a secured environment |
-| Production  | Sealed Secrets | Secure production deployment |
+| Environment | Secret Type              | Purpose                          |
+| ----------- | ------------------------ | -------------------------------- |
+| Local       | Plain Kubernetes Secrets | Development, ease of use         |
+| Staging     | Sealed Secrets           | Testing in a secured environment |
+| Production  | Sealed Secrets           | Secure production deployment     |
 
 ## Important Security Note
 
 NEVER commit actual production secrets to Git, even in the local environment. The secrets provided in the local directory contain only dummy values suitable for development.
 
 For more information on sealed secrets and the template approach, see the README in the base directory:
-`clusters/base/applications/supabase/sealed-secrets/README.md` 
+`clusters/base/applications/supabase/sealed-secrets/README.md`
