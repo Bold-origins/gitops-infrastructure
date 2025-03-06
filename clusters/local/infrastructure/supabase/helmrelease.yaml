@@ -15,6 +15,7 @@ metadata:
       team: infrastructure
 spec:
   interval: 30m
+  timeout: 10m
   chart:
     spec:
       chart: ./charts/supabase
@@ -25,10 +26,10 @@ spec:
       interval: 1m
   install:
     remediation:
-      retries: 3
+      retries: 1
   upgrade:
     remediation:
-      retries: 3
+      retries: 1
       remediateLastFailure: true
     cleanupOnFail: true
   releaseName: supabase
