@@ -68,35 +68,40 @@ git clone https://github.com/yourusername/cluster.git
 cd cluster
 ```
 
-### 2. Set Up Minikube Environment
+### 2. Initialize Environment (Enhanced Workflow)
+
+Use our streamlined setup script to initialize your local development environment:
 
 ```bash
-chmod +x scripts/cluster/setup-minikube.sh
-./scripts/cluster/setup-minikube.sh
+chmod +x scripts/setup/init-environment.sh
+./scripts/setup/init-environment.sh
 ```
 
-Customize resources by editing the script if needed.
+This script will:
+- Load environment variables from `.env`
+- Set up Minikube with proper resources
+- Enable required addons
+- Verify prerequisites
 
-### 3. Verify Environment
+### 3. Deploy All Components
 
 ```bash
-chmod +x scripts/cluster/verify-environment.sh
+./scripts/cluster/setup-all.sh
+```
+
+This script deploys the entire infrastructure stack:
+- Core infrastructure (cert-manager, sealed-secrets, vault)
+- Networking components (ingress-nginx, metallb)
+- Observability stack (prometheus, grafana, loki)
+- Applications (supabase)
+
+### 4. Verify Environment
+
+```bash
 ./scripts/cluster/verify-environment.sh
 ```
 
-Ensures Minikube and key resources are properly configured.
-
-### 4. Bootstrap Flux (Optional)
-
-```bash
-flux bootstrap github \
-  --owner=yourusername \
-  --repository=cluster \
-  --branch=main \
-  --path=clusters/local
-```
-
-Update parameters (`--owner`, `--repository`, `--branch`) as necessary.
+This ensures all components are properly deployed and running.
 
 ### 5. Access Local Services
 
@@ -158,10 +163,10 @@ Forward local cluster services:
 The repository includes a fully configured Supabase deployment for local development:
 
 - **Configuration**: Located in `clusters/local/applications/supabase/`
-- **Secrets Management**: 
+- **Secrets Management**:
   - Local development uses regular Kubernetes Secrets
   - Production environments use SealedSecrets for secure secret management
-- **Components**: 
+- **Components**:
   - PostgreSQL database
   - Authentication services
   - Storage (integrated with MinIO)
@@ -177,6 +182,7 @@ For more details, see [`clusters/local/applications/supabase/README.md`](cluster
 This project uses a dual approach to secrets management for different environments:
 
 1. **Local Development**: Uses plain Kubernetes Secrets for easy debugging and development
+
    - Located in `clusters/local/applications/*/secrets/` directories
 
 2. **Production Environments**: Uses SealedSecrets for secure, encrypted storage in Git

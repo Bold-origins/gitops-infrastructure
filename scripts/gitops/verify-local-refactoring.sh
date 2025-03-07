@@ -25,36 +25,36 @@ redundant_file_issues=0
 # Process each component type
 for component_type in "${COMPONENT_TYPES[@]}"; do
   echo -e "\n${YELLOW}Checking $component_type components...${NC}"
-  
+
   # Skip if the directory doesn't exist
   if [ ! -d "clusters/local/$component_type" ]; then
     echo -e "${YELLOW}Directory clusters/local/$component_type does not exist, skipping.${NC}"
     continue
   fi
-  
+
   # Skip if the base directory doesn't exist
   if [ ! -d "clusters/base/$component_type" ]; then
     echo -e "${YELLOW}Directory clusters/base/$component_type does not exist, skipping.${NC}"
     continue
   fi
-  
+
   # Find all local components
   local_components=$(find "clusters/local/$component_type" -maxdepth 1 -type d | grep -v "^clusters/local/$component_type$" | xargs -n 1 basename)
-  
+
   if [ -z "$local_components" ]; then
     echo -e "${YELLOW}No components found in local/$component_type, skipping.${NC}"
     continue
   fi
-  
+
   # Process each component
   for component in $local_components; do
     local_dir="clusters/local/$component_type/$component"
     base_dir="clusters/base/$component_type/$component"
-    
+
     total_components=$((total_components + 1))
-    
+
     echo -e "\n${GREEN}Verifying $component in $component_type...${NC}"
-    
+
     # Check if base component exists
     if [ ! -d "$base_dir" ]; then
       echo -e "  ${RED}❌ Base component does not exist: $base_dir${NC}"
@@ -62,7 +62,7 @@ for component_type in "${COMPONENT_TYPES[@]}"; do
       issues_found=$((issues_found + 1))
       continue
     fi
-    
+
     # Check if the component has been refactored (has a patches directory)
     if [ ! -d "$local_dir/patches" ]; then
       echo -e "  ${YELLOW}⚠️ Component has not been refactored yet (no patches directory).${NC}"
@@ -70,9 +70,9 @@ for component_type in "${COMPONENT_TYPES[@]}"; do
       echo -e "  ./scripts/refactor-workflow.sh $component $component_type"
       continue
     fi
-    
+
     refactored_components=$((refactored_components + 1))
-    
+
     # Check kustomization.yaml
     if [ -f "$local_dir/kustomization.yaml" ]; then
       # Check if kustomization references the base
@@ -87,14 +87,14 @@ for component_type in "${COMPONENT_TYPES[@]}"; do
       echo -e "  ${RED}❌ kustomization.yaml is missing${NC}"
       issues_found=$((issues_found + 1))
     fi
-    
+
     # Check for redundant files
     redundant_files=$(find "$local_dir" -type f \
       -not -path "$local_dir/kustomization.yaml" \
       -not -path "$local_dir/patches/*" \
       -not -path "$local_dir/helm/values.yaml" \
       -name "*.yaml" | wc -l)
-    
+
     if [ $redundant_files -gt 0 ]; then
       echo -e "  ${YELLOW}⚠️ Found $redundant_files potentially redundant files${NC}"
       echo -e "  ${YELLOW}Run cleanup script to remove them:${NC}"
@@ -104,7 +104,7 @@ for component_type in "${COMPONENT_TYPES[@]}"; do
     else
       echo -e "  ${GREEN}✓ No redundant files found${NC}"
     fi
-    
+
     # Check if patch files exist
     patch_count=$(find "$local_dir/patches" -type f -name "*.yaml" | wc -l)
     if [ $patch_count -eq 0 ]; then
@@ -113,10 +113,10 @@ for component_type in "${COMPONENT_TYPES[@]}"; do
     else
       echo -e "  ${GREEN}✓ Found $patch_count patch files${NC}"
     fi
-    
+
     # Try to validate with kustomize
     echo -e "  ${YELLOW}Testing component with kustomize...${NC}"
-    if kubectl kustomize "$local_dir" > /dev/null 2>&1; then
+    if kubectl kustomize "$local_dir" >/dev/null 2>&1; then
       echo -e "  ${GREEN}✓ Kustomize validation successful${NC}"
       correctly_refactored=$((correctly_refactored + 1))
     else
@@ -165,4 +165,4 @@ if [ $((issues_found - redundant_file_issues)) -eq 0 ] && [ $redundant_file_issu
     echo -e "${YELLOW}Skipping cleanup. You can run it later with:${NC}"
     echo -e "  ./scripts/cleanup-local-refactoring.sh"
   fi
-fi 
+fi

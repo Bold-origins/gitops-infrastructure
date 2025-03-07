@@ -1,300 +1,203 @@
-# Local Environment Troubleshooting Guide
+# Troubleshooting Guide
 
-This document provides solutions for common issues encountered when setting up and running the local Minikube environment.
+This document provides solutions for common issues encountered when setting up and using the local Kubernetes environment.
 
-## Minikube Issues
+## Environment Setup Issues
 
-### Insufficient Resources
+### Minikube Fails to Start
 
-**Symptom:** Minikube fails to start or components crash frequently.
+**Symptoms**:
+- Error about insufficient resources
+- Docker driver fails to create container
 
-**Solution:**
-```bash
-# Stop minikube
-minikube stop
+**Solutions**:
+1. **Adjust Resource Allocation**:
+   ```bash
+   # Edit .env file or set environment variables
+   export MINIKUBE_MEMORY=4096  # Reduce memory allocation
+   export MINIKUBE_CPUS=2       # Reduce CPU allocation
+   ./scripts/setup/init-environment.sh
+   ```
 
-# Start with increased resources
-minikube start --memory 10240 --cpus 6 --disk-size 40g
-```
+2. **Check Docker Resources**:
+   - In Docker Desktop, go to Settings → Resources
+   - Ensure sufficient memory and CPU are allocated to Docker
 
-### Connection Refused
+### Missing Prerequisites
 
-**Symptom:** `kubectl` commands fail with "connection refused" errors.
+**Symptoms**:
+- "Command not found" errors for tools like kubectl, flux, helm
 
-**Solution:**
-```bash
-# Verify minikube status
-minikube status
+**Solutions**:
+1. **Install Missing Tools**:
+   ```bash
+   # macOS with Homebrew
+   brew install kubectl flux helm minikube
+   
+   # Other platforms - follow official docs
+   # kubectl: https://kubernetes.io/docs/tasks/tools/install-kubectl/
+   # flux: https://fluxcd.io/docs/installation/
+   # helm: https://helm.sh/docs/intro/install/
+   ```
 
-# If minikube is not running, start it
-minikube start
+## GitOps Issues
 
-# If still having issues, try recreating the minikube context
-minikube delete
-./scripts/cluster/setup-minikube.sh
-```
+### Flux Not Reconciling
 
-### Local Domain Resolution
+**Symptoms**:
+- Components not being deployed
+- Error messages in `flux get all` output
 
-**Symptom:** Cannot access services via `.local` domains.
+**Solutions**:
+1. **Check GitHub Credentials**:
+   ```bash
+   # Verify .env contains correct values
+   cat .env | grep GITHUB
+   ```
 
-**Solution:**
-```bash
-# Check if ingress addon is enabled
-minikube addons list
+2. **Manual Reconciliation**:
+   ```bash
+   # Reconcile GitRepository
+   flux reconcile source git flux-system
+   
+   # Reconcile Kustomization
+   flux reconcile kustomization flux-system
+   flux reconcile kustomization local-core-infra
+   ```
 
-# Enable ingress if not enabled
-minikube addons enable ingress
+3. **Check Repository Structure**:
+   - Ensure the GitHub repository structure matches what's expected
+   - Check that the branch specified in Flux configuration exists
 
-# Verify hosts file entries
-sudo cat /etc/hosts | grep local
+### GitRepository Missing
 
-# Add missing entries
-echo "$(minikube ip) grafana.local prometheus.local vault.local supabase.local" | sudo tee -a /etc/hosts
-```
+**Symptoms**:
+- `flux get sources git` shows no GitRepository resources
+- Components fail to deploy through Flux
 
-## Infrastructure Component Issues
+**Solutions**:
+1. **Run Setup Flux Script**:
+   ```bash
+   ./scripts/cluster/setup-flux.sh
+   ```
 
-### Cert-Manager
+2. **Create GitRepository Manually**:
+   ```bash
+   # Create secret for repository access
+   kubectl -n flux-system create secret generic flux-system \
+       --from-literal=username=${GITHUB_USER} \
+       --from-literal=password=${GITHUB_TOKEN}
+       
+   # Create GitRepository
+   flux create source git flux-system \
+       --url=https://github.com/${GITHUB_USER}/${GITHUB_REPO} \
+       --branch=main \
+       --username=${GITHUB_USER} \
+       --password=${GITHUB_TOKEN} \
+       --namespace=flux-system
+   ```
 
-**Symptom:** Certificate issuance fails, TLS errors.
+## Component Deployment Issues
 
-**Solution:**
-```bash
-# Check cert-manager pod status
-kubectl get pods -n cert-manager
+### Components Not Being Deployed
 
-# View logs of the cert-manager pod
-kubectl logs -n cert-manager -l app=cert-manager
+**Symptoms**:
+- Namespaces exist but no pods are running
+- Kustomization shows errors in Flux output
 
-# Verify ClusterIssuers
-kubectl get clusterissuers
+**Solutions**:
+1. **Check Kustomization Path**:
+   ```bash
+   # Verify the path in flux-kustomization.yaml
+   cat clusters/local/flux-kustomization.yaml
+   
+   # Ensure path is set to ./clusters/local/infrastructure (not a specific component)
+   ```
 
-# Create self-signed issuer if missing
-kubectl apply -f clusters/local/infrastructure/cert-manager/patches/self-signed-issuer.yaml
-```
+2. **Check Base References**:
+   - Ensure base paths in kustomization files are correct
+   - Verify all referenced files exist in the repository
 
-### Sealed Secrets
+### Verification Shows False Positives
 
-**Symptom:** Unable to decrypt secrets, pods failing due to missing secrets.
+**Symptoms**:
+- Verification script reports components as healthy when they're not
+- Empty namespaces reported as running correctly
 
-**Solution:**
-```bash
-# Check if sealed secrets controller is running
-kubectl get pods -n kube-system -l app.kubernetes.io/name=sealed-secrets
+**Solutions**:
+1. **Use Manual Verification**:
+   ```bash
+   # Check actual pod status
+   kubectl get pods -A
+   
+   # Check specific namespaces
+   kubectl get pods -n cert-manager
+   kubectl get pods -n observability
+   ```
 
-# Check logs
-kubectl logs -n kube-system -l app.kubernetes.io/name=sealed-secrets
-
-# Recreate controller and secrets (Warning: this will require resealing all secrets)
-kubectl delete -f clusters/local/infrastructure/sealed-secrets/
-kubectl apply -k clusters/local/infrastructure/sealed-secrets/
-```
-
-### Vault
-
-**Symptom:** Vault is sealed or inaccessible.
-
-**Solution:**
-```bash
-# Check vault status
-kubectl exec -it vault-0 -n vault -- vault status
-
-# Unseal vault if sealed
-./scripts/components/vault-unseal.sh
-
-# If needed, reinitialize vault
-./scripts/components/vault-init.sh
-```
+2. **Update Verification Script**:
+   - Ensure check_component() function properly verifies pod existence
+   - Fix any logic issues in the script
 
 ## Networking Issues
 
-### Ingress Not Working
+### Services Not Accessible
 
-**Symptom:** Unable to access services through ingress.
+**Symptoms**:
+- Unable to access services through ingress
+- curl to service endpoints fails
 
-**Solution:**
+**Solutions**:
+1. **Check /etc/hosts File**:
+   ```bash
+   # Get Ingress IP
+   INGRESS_IP=$(kubectl get svc -n ingress-nginx ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+   
+   # Add to /etc/hosts
+   echo "${INGRESS_IP} grafana.local prometheus.local vault.local supabase.local" | sudo tee -a /etc/hosts
+   ```
+
+2. **Check Ingress Resources**:
+   ```bash
+   # Verify ingress resources
+   kubectl get ingress -A
+   
+   # Check ingress controller status
+   kubectl get pods -n ingress-nginx
+   ```
+
+3. **Run Port Forwarding**:
+   ```bash
+   ./scripts/components/port-forward.sh
+   ```
+
+## Log Collection for Troubleshooting
+
+When reporting issues, collect the following information:
+
 ```bash
-# Check ingress controller pods
-kubectl get pods -n ingress-nginx
+# Get all resources
+kubectl get all -A > all-resources.log
 
-# Check ingress resources
-kubectl get ingress --all-namespaces
+# Get Flux status
+flux get all > flux-status.log
 
-# Verify ingress controller service
-kubectl get svc -n ingress-nginx
+# Get logs for problematic pods
+kubectl logs -n [namespace] [pod-name] > pod-logs.log
 
-# Restart ingress controller if needed
-kubectl rollout restart deployment -n ingress-nginx ingress-nginx-controller
+# Get events
+kubectl get events --sort-by='.lastTimestamp' > events.log
 ```
 
-### MetalLB Issues
+## Reset and Start Over
 
-**Symptom:** LoadBalancer services stuck in pending state.
-
-**Solution:**
-```bash
-# Check MetalLB pods
-kubectl get pods -n metallb-system
-
-# Verify address pool configuration
-kubectl get cm -n metallb-system config -o yaml
-
-# Check logs
-kubectl logs -n metallb-system -l app=metallb
-
-# Recreate MetalLB if needed
-kubectl apply -k clusters/local/infrastructure/metallb
-```
-
-## Observability Issues
-
-### Prometheus Not Collecting Metrics
-
-**Symptom:** No metrics in Prometheus or data missing in Grafana.
-
-**Solution:**
-```bash
-# Check Prometheus pods
-kubectl get pods -n observability
-
-# Check ServiceMonitor resources
-kubectl get servicemonitors --all-namespaces
-
-# Check PodMonitor resources
-kubectl get podmonitors --all-namespaces
-
-# Verify storage (PVCs)
-kubectl get pvc -n observability
-
-# Restart Prometheus if needed
-kubectl rollout restart statefulset -n observability prometheus-prometheus
-```
-
-### Grafana Issues
-
-**Symptom:** Cannot access Grafana or dashboards missing.
-
-**Solution:**
-```bash
-# Check Grafana pod
-kubectl get pods -n observability -l app.kubernetes.io/name=grafana
-
-# Verify Grafana service
-kubectl get svc -n observability -l app.kubernetes.io/name=grafana
-
-# Check Grafana logs
-kubectl logs -n observability -l app.kubernetes.io/name=grafana
-
-# Reset Grafana admin password
-kubectl delete secret -n observability grafana-admin-credentials
-kubectl apply -f clusters/local/observability/grafana/patches/admin-credentials.yaml
-```
-
-### Loki Log Issues
-
-**Symptom:** Logs not appearing in Grafana/Loki.
-
-**Solution:**
-```bash
-# Check Loki pods
-kubectl get pods -n observability -l app=loki
-
-# Check Promtail pods (log collectors)
-kubectl get pods -n observability -l app=promtail
-
-# View Promtail logs
-kubectl logs -n observability -l app=promtail
-
-# Restart log collection
-kubectl rollout restart daemonset -n observability promtail
-```
-
-## Application Issues
-
-### Supabase Connectivity
-
-**Symptom:** Cannot connect to Supabase services.
-
-**Solution:**
-```bash
-# Check Supabase pods
-kubectl get pods -n supabase
-
-# Check individual services
-kubectl get svc -n supabase
-
-# Verify database init job completed
-kubectl get jobs -n supabase
-
-# Check database logs
-kubectl logs -n supabase -l app=postgres
-
-# Reset Supabase instance
-kubectl delete -f clusters/local/applications/supabase/
-kubectl apply -k clusters/local/applications/supabase/
-```
-
-## Flux Issues
-
-### GitOps Sync Failures
-
-**Symptom:** Flux not syncing changes from Git.
-
-**Solution:**
-```bash
-# Check Flux components
-kubectl get pods -n flux-system
-
-# Check GitRepository resource
-kubectl get gitrepositories -n flux-system
-
-# Check Kustomization resources
-kubectl get kustomizations -n flux-system
-
-# View reconciliation logs
-kubectl logs -n flux-system -l app=source-controller
-kubectl logs -n flux-system -l app=kustomize-controller
-
-# Trigger manual reconciliation
-flux reconcile source git flux-system
-flux reconcile kustomization flux-system
-```
-
-## Complete Environment Reset
-
-If all else fails, you can reset everything and start fresh:
+If you encounter persistent issues, sometimes it's best to reset and start fresh:
 
 ```bash
-# Delete the entire Minikube cluster
+# Delete Minikube cluster
 minikube delete
 
-# Remove any leftover files
-rm -rf ~/.minikube
-
-# Start fresh setup
-./scripts/cluster/setup-minikube.sh
+# Start from scratch with our enhanced workflow
+./scripts/setup/init-environment.sh
 ./scripts/cluster/setup-all.sh
-```
-
-## Performance Optimization
-
-If the environment is running slowly:
-
-```bash
-# Reduce resource usage
-kubectl scale deployment -n observability prometheus-operator --replicas=0 # temporarily disable operator
-kubectl patch prometheus -n observability prometheus-prometheus --type merge -p '{"spec":{"resources":{"requests":{"memory":"512Mi","cpu":"100m"}}}}'
-kubectl patch deployment -n observability grafana --type merge -p '{"spec":{"template":{"spec":{"containers":[{"name":"grafana","resources":{"requests":{"memory":"128Mi","cpu":"50m"}}}]}}}}'
-
-# Reduce logging verbosity
-kubectl patch cm -n observability loki --type merge -p '{"data":{"loki.yaml":"log_level: warn"}}'
-```
-
-## Getting Help
-
-If you've tried the solutions above and still have issues:
-
-1. Gather diagnostic information with `./scripts/cluster/collect-diagnostics.sh`
-2. Check the issue tracker on the project repository
-3. Contact the development team with the diagnostic information 
+``` 

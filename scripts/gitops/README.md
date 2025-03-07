@@ -65,10 +65,12 @@ This directory contains all the scripts used to maintain, diagnose, and interact
 ## Directory Structure
 
 - **cluster-management/** - Scripts for setting up, configuring, and cleaning up clusters
+
   - `setup-cluster.sh` - Sets up a new cluster
   - `cleanup-cluster.sh` - Cleans up a cluster when no longer needed
 
 - **connectivity/** - Scripts for establishing connectivity to cluster services
+
   - `port-forward.sh` - Sets up port forwarding for accessing cluster services
   - `kubefwd-setup.sh` - Configures kubefwd for accessing services
   - `fix-tunnel.sh` - Troubleshooting script for tunnel issues
@@ -104,11 +106,13 @@ The following scripts help refactor the local environment to use the base config
 **Purpose**: End-to-end workflow for refactoring a component
 
 **Usage**:
+
 ```bash
 ./scripts/refactor-workflow.sh component-name [component-type]
 ```
 
 **Example**:
+
 ```bash
 # Refactor cert-manager (infrastructure is the default type)
 ./scripts/refactor-workflow.sh cert-manager
@@ -118,6 +122,7 @@ The following scripts help refactor the local environment to use the base config
 ```
 
 **Workflow**:
+
 1. Verifies directories exist
 2. Creates a backup of the local component
 3. Refactors the component to use base configuration
@@ -132,16 +137,19 @@ The following scripts help refactor the local environment to use the base config
 **Purpose**: Core script for refactoring a single component
 
 **Usage**:
+
 ```bash
 ./scripts/refactor-component.sh component-name [component-type]
 ```
 
 **Example**:
+
 ```bash
 ./scripts/refactor-component.sh ingress infrastructure
 ```
 
 **Features**:
+
 - Creates patches directory
 - Generates kustomization.yaml referencing base configuration
 - Analyzes base configuration to identify potential patch points
@@ -156,11 +164,13 @@ The following scripts help refactor the local environment to use the base config
 **Purpose**: Cleans up redundant files after refactoring
 
 **Usage**:
+
 ```bash
 ./scripts/cleanup-local-refactoring.sh
 ```
 
 **Features**:
+
 - Auto-discovers refactored components across all component types
 - Identifies redundant files that are now sourced from base
 - Moves redundant files to a timestamped backup directory
@@ -172,11 +182,13 @@ The following scripts help refactor the local environment to use the base config
 **Purpose**: Verifies that the local environment is correctly refactored
 
 **Usage**:
+
 ```bash
 ./scripts/verify-local-refactoring.sh
 ```
 
 **Features**:
+
 - Checks all components across all component types
 - Verifies proper references to base configurations
 - Identifies redundant files in the local environment
@@ -190,22 +202,26 @@ The following scripts help refactor the local environment to use the base config
 To ensure your local environment is clean and properly refactored, follow this process:
 
 1. **Verify current state**:
+
    ```bash
    ./scripts/verify-local-refactoring.sh
    ```
 
 2. **Refactor remaining components**:
+
    ```bash
    # For each component that needs refactoring
    ./scripts/refactor-workflow.sh component-name component-type
    ```
 
 3. **Clean up redundant files**:
+
    ```bash
    ./scripts/cleanup-local-refactoring.sh
    ```
 
 4. **Verify again**:
+
    ```bash
    ./scripts/verify-local-refactoring.sh
    ```
@@ -272,4 +288,4 @@ To ensure your local environment is clean and properly refactored, follow this p
 
 4. **Maintain progress tracking** - The scripts automatically update progress tracking documents, but make sure to check them.
 
-5. **Focus on local development needs** - Ensure patches focus on local development needs: reduced resources, simplified security, local domains, etc. 
+5. **Focus on local development needs** - Ensure patches focus on local development needs: reduced resources, simplified security, local domains, etc.

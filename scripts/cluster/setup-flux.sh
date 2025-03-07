@@ -85,11 +85,13 @@ fi
 if [[ -n "$GITHUB_USER" && -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
     echo "Setting up Flux with repository: ${GITHUB_USER}/${GITHUB_REPO}"
     
-    # Create temporary file with GitHub token
-    TOKEN_FILE=$(mktemp)
-    echo "${GITHUB_TOKEN}" > "${TOKEN_FILE}"
+    # Secure debug output to verify values
+    echo "Repository owner: ${GITHUB_USER}"
+    echo "Repository name: ${GITHUB_REPO}"
+    echo "Repository token: ${GITHUB_TOKEN:0:3}...${GITHUB_TOKEN: -3}" # Show only first and last 3 chars
     
     # Bootstrap Flux with the GitHub repository
+    echo "Running bootstrap command..."
     flux bootstrap github \
         --owner="${GITHUB_USER}" \
         --repository="${GITHUB_REPO}" \
@@ -97,11 +99,38 @@ if [[ -n "$GITHUB_USER" && -n "$GITHUB_REPO" && -n "$GITHUB_TOKEN" ]]; then
         --path=clusters/local \
         --personal \
         --token-auth \
-        --token-file="${TOKEN_FILE}" \
-        --components-extra=image-reflector-controller,image-automation-controller
+        --token="${GITHUB_TOKEN}" \
+        --components-extra=image-reflector-controller,image-automation-controller || true  # Continue on error
     
-    # Remove token file
-    rm "${TOKEN_FILE}"
+    # Verify if GitRepository was created, create it manually if not
+    echo "Verifying GitRepository resource..."
+    if ! kubectl get gitrepository -n flux-system flux-system &>/dev/null; then
+        echo "GitRepository not created by bootstrap. Creating manually..."
+        
+        # Create namespace if it doesn't exist
+        if ! kubectl get namespace flux-system &>/dev/null; then
+            kubectl create namespace flux-system
+        fi
+        
+        # Create secret for repository access
+        kubectl -n flux-system create secret generic flux-system \
+            --from-literal=username=${GITHUB_USER} \
+            --from-literal=password=${GITHUB_TOKEN} \
+            --dry-run=client -o yaml | kubectl apply -f -
+        
+        # Create GitRepository resource
+        flux create source git flux-system \
+            --url=https://github.com/${GITHUB_USER}/${GITHUB_REPO} \
+            --branch=main \
+            --username=${GITHUB_USER} \
+            --password=${GITHUB_TOKEN} \
+            --namespace=flux-system \
+            --secret-ref=flux-system
+        
+        echo "GitRepository manually created."
+    else
+        echo "GitRepository resource exists."
+    fi
 else
     echo "Installing Flux without Git repository configuration..."
     flux install

@@ -41,28 +41,34 @@ check_component() {
         return 1
     fi
     
-    # Check if pods exist
+    # Check if pods exist and are running
     if [ -n "${label_selector}" ]; then
-        if ! kubectl get pods -n "${namespace}" -l "${label_selector}" &>/dev/null; then
+        # When label selector is provided
+        POD_COUNT=$(kubectl get pods -n "${namespace}" -l "${label_selector}" --no-headers 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$POD_COUNT" -eq 0 ]; then
             echo "  ❌ No pods found for ${component} with selector ${label_selector}."
             return 1
         fi
         
-        # Check pod status
-        if kubectl get pods -n "${namespace}" -l "${label_selector}" | grep -v Running | grep -v Completed | grep -v "NAME" &>/dev/null; then
+        # Check if all pods are running or completed
+        NOT_READY_COUNT=$(kubectl get pods -n "${namespace}" -l "${label_selector}" --no-headers 2>/dev/null | grep -v "Running\|Completed" | wc -l | tr -d ' ')
+        if [ "$NOT_READY_COUNT" -ne 0 ]; then
             echo "  ⚠️ Some pods for ${component} are not in Running or Completed state:"
             kubectl get pods -n "${namespace}" -l "${label_selector}" | grep -v Running | grep -v Completed | grep -v "NAME"
             return 2
         fi
     else
-        if ! kubectl get pods -n "${namespace}" &>/dev/null || [ "$(kubectl get pods -n "${namespace}" --no-headers | wc -l)" -eq 0 ]; then
-            echo "  ❌ No pods found for ${component}."
+        # When no label selector is provided, check all pods in namespace
+        POD_COUNT=$(kubectl get pods -n "${namespace}" --no-headers 2>/dev/null | wc -l | tr -d ' ')
+        if [ "$POD_COUNT" -eq 0 ]; then
+            echo "  ❌ No pods found in namespace ${namespace}."
             return 1
         fi
         
-        # Check pod status
-        if kubectl get pods -n "${namespace}" | grep -v Running | grep -v Completed | grep -v "NAME" &>/dev/null; then
-            echo "  ⚠️ Some pods for ${component} are not in Running or Completed state:"
+        # Check if all pods are running or completed
+        NOT_READY_COUNT=$(kubectl get pods -n "${namespace}" --no-headers 2>/dev/null | grep -v "Running\|Completed" | wc -l | tr -d ' ')
+        if [ "$NOT_READY_COUNT" -ne 0 ]; then
+            echo "  ⚠️ Some pods in namespace ${namespace} are not in Running or Completed state:"
             kubectl get pods -n "${namespace}" | grep -v Running | grep -v Completed | grep -v "NAME"
             return 2
         fi
