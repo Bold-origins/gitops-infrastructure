@@ -1,0 +1,167 @@
+{
+  "name": "cluster",
+  "description": "GitOps-based Kubernetes cluster configuration",
+  "root_directories": {
+    "charts": {
+      "description": "Helm charts",
+      "subdirectories": {
+        "example-app": {
+          "description": "Example application Helm chart"
+        }
+      }
+    },
+    "clusters": {
+      "description": "Kubernetes cluster configurations",
+      "subdirectories": {
+        "base": {
+          "description": "Base configurations (environment-agnostic)",
+          "subdirectories": {
+            "applications": {
+              "description": "Application configurations",
+              "subdirectories": {
+                "supabase": {
+                  "description": "Supabase application configuration"
+                }
+              }
+            },
+            "infrastructure": {
+              "description": "Infrastructure configurations",
+              "subdirectories": {
+                "cert-manager": {
+                  "description": "Certificate management"
+                },
+                "gatekeeper": {
+                  "description": "Policy enforcement"
+                },
+                "ingress": {
+                  "description": "Ingress controller"
+                },
+                "metallb": {
+                  "description": "Load balancer"
+                },
+                "minio": {
+                  "description": "Object storage"
+                },
+                "policy-engine": {
+                  "description": "Policy engine"
+                },
+                "sealed-secrets": {
+                  "description": "Encrypted secrets"
+                },
+                "security": {
+                  "description": "Security policies"
+                },
+                "vault": {
+                  "description": "Secret management"
+                }
+              }
+            },
+            "observability": {
+              "description": "Observability configurations",
+              "subdirectories": {
+                "common": {
+                  "description": "Common configurations"
+                },
+                "grafana": {
+                  "description": "Visualization and dashboards"
+                },
+                "loki": {
+                  "description": "Log aggregation"
+                },
+                "network": {
+                  "description": "Network monitoring"
+                },
+                "opentelemetry": {
+                  "description": "Distributed tracing"
+                },
+                "prometheus": {
+                  "description": "Metrics and monitoring"
+                }
+              }
+            },
+            "policies": {
+              "description": "Policy configurations",
+              "subdirectories": {
+                "constraints": {
+                  "description": "Policy constraints"
+                },
+                "templates": {
+                  "description": "Policy templates"
+                }
+              }
+            }
+          }
+        },
+        "local": {
+          "description": "Local environment configurations",
+          "subdirectories": {
+            "applications": {
+              "description": "Local application configurations"
+            },
+            "infrastructure": {
+              "description": "Local infrastructure configurations"
+            },
+            "observability": {
+              "description": "Local observability configurations"
+            },
+            "policies": {
+              "description": "Local policy configurations"
+            }
+          }
+        }
+      }
+    },
+    "conext": {
+      "description": "Project context and documentation",
+      "files": {
+        "APP_FLOW_DOCUMENT.md": "Application flow documentation",
+        "Deployment_Plan_Overview.md": "Deployment plan overview",
+        "Deployment_Workflow_Plan.md": "Deployment workflow plan",
+        "PROGRESS_DOCUMENT.md": "Project progress documentation",
+        "PROJECT_REQUIREMENTS_DOCUMENT.md": "Project requirements documentation",
+        "TECH_STACK_DOCUMENT.md": "Technology stack documentation"
+      }
+    },
+    "docs": {
+      "description": "User documentation",
+      "files": {
+        "LOCAL_SETUP.md": "Local setup documentation",
+        "TROUBLESHOOTING.md": "Troubleshooting documentation"
+      }
+    },
+    "scripts": {
+      "description": "Automation scripts",
+      "subdirectories": {
+        "cluster": {
+          "description": "Cluster setup scripts",
+          "files": {
+            "setup-all.sh": "Run all setup scripts",
+            "setup-applications.sh": "Set up applications",
+            "setup-core-infrastructure.sh": "Set up core infrastructure",
+            "setup-flux.sh": "Set up Flux GitOps",
+            "setup-minikube.sh": "Set up Minikube",
+            "setup-networking.sh": "Set up networking",
+            "setup-observability.sh": "Set up observability",
+            "verify-environment.sh": "Verify environment setup"
+          }
+        },
+        "gitops": {
+          "description": "GitOps workflow scripts",
+          "files": {
+            "cleanup-local-refactoring.sh": "Clean up local refactoring",
+            "refactor-component.sh": "Refactor a component for GitOps",
+            "refactor-workflow.sh": "Refactor workflow",
+            "verify-local-refactoring.sh": "Verify local refactoring"
+          }
+        },
+        "promotion": {
+          "description": "Environment promotion scripts"
+        }
+      }
+    }
+  },
+  "files": {
+    "README.md": "Repository overview",
+    "CLAUDE.md": "Claude-specific information about the repository"
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "infrastructure": {
+    "cert-manager": {
+      "description": "TLS certificate management",
+      "dependencies": ["flux-system"],
+      "required_by": ["ingress", "vault"],
+      "namespace": "cert-manager",
+      "path": "clusters/base/infrastructure/cert-manager"
+    },
+    "sealed-secrets": {
+      "description": "Encrypted Kubernetes secrets",
+      "dependencies": ["flux-system"],
+      "required_by": ["applications", "vault"],
+      "namespace": "sealed-secrets",
+      "path": "clusters/base/infrastructure/sealed-secrets"
+    },
+    "metallb": {
+      "description": "Load balancing",
+      "dependencies": ["flux-system"],
+      "required_by": ["ingress", "minio"],
+      "namespace": "metallb-system",
+      "path": "clusters/base/infrastructure/metallb"
+    },
+    "ingress": {
+      "description": "External access to services",
+      "dependencies": ["flux-system", "metallb", "cert-manager"],
+      "required_by": ["applications"],
+      "namespace": "ingress-nginx",
+      "path": "clusters/base/infrastructure/ingress"
+    },
+    "gatekeeper": {
+      "description": "Policy enforcement",
+      "dependencies": ["flux-system"],
+      "required_by": ["policy-engine"],
+      "namespace": "gatekeeper-system",
+      "path": "clusters/base/infrastructure/gatekeeper"
+    },
+    "policy-engine": {
+      "description": "Policy templates and constraints",
+      "dependencies": ["gatekeeper"],
+      "required_by": ["security"],
+      "namespace": "gatekeeper-system",
+      "path": "clusters/base/infrastructure/policy-engine"
+    },
+    "minio": {
+      "description": "S3-compatible object storage",
+      "dependencies": ["flux-system", "metallb"],
+      "required_by": ["applications"],
+      "namespace": "minio",
+      "path": "clusters/base/infrastructure/minio"
+    },
+    "vault": {
+      "description": "Secret management",
+      "dependencies": ["flux-system", "cert-manager", "sealed-secrets"],
+      "required_by": [],
+      "namespace": "vault",
+      "path": "clusters/base/infrastructure/vault"
+    },
+    "security": {
+      "description": "Security policies and configurations",
+      "dependencies": ["policy-engine"],
+      "required_by": [],
+      "namespace": "security",
+      "path": "clusters/base/infrastructure/security"
+    }
+  },
+  "observability": {
+    "grafana": {
+      "description": "Visualization and dashboards",
+      "dependencies": ["flux-system", "prometheus", "loki"],
+      "required_by": [],
+      "namespace": "observability",
+      "path": "clusters/base/observability/grafana"
+    },
+    "loki": {
+      "description": "Log aggregation",
+      "dependencies": ["flux-system"],
+      "required_by": ["grafana"],
+      "namespace": "observability",
+      "path": "clusters/base/observability/loki"
+    },
+    "prometheus": {
+      "description": "Metrics and monitoring",
+      "dependencies": ["flux-system"],
+      "required_by": ["grafana"],
+      "namespace": "observability",
+      "path": "clusters/base/observability/prometheus"
+    },
+    "opentelemetry": {
+      "description": "Distributed tracing",
+      "dependencies": ["flux-system"],
+      "required_by": ["grafana"],
+      "namespace": "observability",
+      "path": "clusters/base/observability/opentelemetry"
+    },
+    "common": {
+      "description": "Common observability configurations",
+      "dependencies": ["flux-system"],
+      "required_by": ["grafana", "loki", "prometheus", "opentelemetry"],
+      "namespace": "observability",
+      "path": "clusters/base/observability/common"
+    },
+    "network": {
+      "description": "Network monitoring",
+      "dependencies": ["flux-system", "prometheus"],
+      "required_by": [],
+      "namespace": "observability",
+      "path": "clusters/base/observability/network"
+    }
+  },
+  "applications": {
+    "supabase": {
+      "description": "Backend services",
+      "dependencies": ["minio", "ingress", "cert-manager", "sealed-secrets"],
+      "required_by": [],
+      "namespace": "supabase",
+      "path": "clusters/base/applications/supabase"
+    }
+  }
+}
