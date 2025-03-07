@@ -143,17 +143,19 @@ flux create source git flux-system \
 
 echo "✅ GitRepository resource created"
 
-# Apply flux-kustomization.yaml
-echo "Applying Flux kustomization configuration..."
+# Apply flux-kustomization.yaml files in stages
+echo "Applying Flux kustomization configurations in stages..."
+
+# Apply stage 1 kustomization
 if [ -f "clusters/local/flux-kustomization.yaml" ]; then
     kubectl apply -f clusters/local/flux-kustomization.yaml
-    echo "✅ Flux kustomization configuration applied"
+    echo "✅ Stage 1 kustomization configuration applied"
 else
     echo "❌ Warning: clusters/local/flux-kustomization.yaml not found"
-    echo "Creating default kustomization:"
-
+    echo "Creating stage 1 kustomization:"
+    
     # Create a default kustomization file
-    cat >clusters/local/flux-kustomization.yaml <<EOF
+    cat > clusters/local/flux-kustomization.yaml << EOF
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -166,19 +168,72 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  timeout: 3m0s
-  retryInterval: 1m0s
+  timeout: 10m0s
+  retryInterval: 2m0s
   wait: true
 EOF
-
+    
     kubectl apply -f clusters/local/flux-kustomization.yaml
-    echo "✅ Default kustomization configuration created and applied"
+    echo "✅ Stage 1 kustomization configuration created and applied"
 fi
 
-# Wait for Flux to reconcile
-echo "Waiting for Flux to reconcile resources..."
-flux reconcile source git flux-system
-flux reconcile kustomization local-core-infra
+# Wait for stage 1 to complete with better retry logic
+echo "Waiting for stage 1 resources to reconcile (this may take a few minutes)..."
+MAX_RETRIES=5
+RETRY_COUNT=0
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    echo "  Attempt $(($RETRY_COUNT + 1))/$MAX_RETRIES..."
+    if flux reconcile kustomization local-core-infra --with-source --timeout=5m; then
+        echo "✅ Stage 1 reconciliation completed successfully"
+        break
+    else
+        RETRY_COUNT=$((RETRY_COUNT + 1))
+        if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+            echo "  Stage 1 reconciliation failed. Retrying in 30 seconds..."
+            sleep 30
+        else
+            echo "⚠️ Failed to reconcile stage 1 after $MAX_RETRIES attempts."
+            echo "  Continuing with stage 2 anyway, but some components may not be ready."
+        fi
+    fi
+done
+
+# Apply stage 2 kustomization
+if [ -f "clusters/local/infrastructure-stage2.yaml" ]; then
+    kubectl apply -f clusters/local/infrastructure-stage2.yaml
+    echo "✅ Stage 2 kustomization configuration applied"
+    
+    # Wait for stage 2 to complete
+    echo "Waiting for stage 2 resources to reconcile (this may take a few minutes)..."
+    RETRY_COUNT=0
+    while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+        echo "  Attempt $(($RETRY_COUNT + 1))/$MAX_RETRIES..."
+        if flux reconcile kustomization local-core-infra-stage2 --with-source --timeout=5m; then
+            echo "✅ Stage 2 reconciliation completed successfully"
+            break
+        else
+            RETRY_COUNT=$((RETRY_COUNT + 1))
+            if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "  Stage 2 reconciliation failed. Retrying in 30 seconds..."
+                sleep 30
+            else
+                echo "⚠️ Failed to reconcile stage 2 after $MAX_RETRIES attempts."
+                echo "  Some components may not be ready."
+                break
+            fi
+        fi
+    done
+fi
+
+# Apply stage 3 (applications) if it exists
+if [ -f "clusters/local/applications.yaml" ]; then
+    kubectl apply -f clusters/local/applications.yaml
+    echo "✅ Applications kustomization configuration applied"
+    
+    # Wait for applications to complete
+    echo "Waiting for applications to reconcile..."
+    flux reconcile kustomization local-applications --with-source --timeout=5m || true
+fi
 
 # Verify setup
 echo "Verifying GitOps setup..."

@@ -3,12 +3,11 @@ kind: Kustomization
 resources:
   - ingress
   - metallb
-  # Disabled problematic components
-  - vault
-  - security
-  - policy-engine
-  - minio
-  # - supabase  # Removed - supabase should be in the applications directory
   - cert-manager
-  - gatekeeper
   - sealed-secrets
+  # These will be added in stage 2
+  # - vault
+  # - security
+  # - policy-engine
+  # - minio
+  # - gatekeeper

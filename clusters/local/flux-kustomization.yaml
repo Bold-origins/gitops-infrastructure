@@ -10,6 +10,15 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  timeout: 3m0s
-  retryInterval: 1m0s
+  timeout: 10m0s
+  retryInterval: 2m0s
   wait: true
+  healthChecks:
+    - kind: Deployment
+      name: vault
+      namespace: vault
+  force: true
+  decryption:
+    provider: sops
+    secretRef:
+      name: flux-system
