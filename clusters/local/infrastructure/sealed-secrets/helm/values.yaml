@@ -2,12 +2,12 @@
 # Reference: https://github.com/bitnami-labs/sealed-secrets/tree/main/helm/sealed-secrets
 
 # NOTE: There was an issue with the v0.24.5 controller:
-# 1. The --key-label flag caused crashes as it doesn't exist in this version
+# 1. The --key-label flag does not exist in this version
 # 2. The service account needs to be explicitly set in the deployment
-# These issues are fixed in the release.yaml configuration.
+# These issues are addressed in the configuration below.
 
 # Use custom name
-fullnameOverride: sealed-secrets
+fullnameOverride: sealed-secrets-controller
 
 # Namespace to deploy the controller
 namespace: sealed-secrets
@@ -38,12 +38,11 @@ controller:
     tag: v0.24.5
     pullPolicy: IfNotPresent
   
-  # Command line arguments - removed --key-label flag which was causing crashes
-  command:
-    - controller
+  # UPDATED: Fixed the args format for Helm compatibility
   args:
-    - --key-prefix=sealed-secrets-key
     - --update-status
+    - --key-prefix=sealed-secrets-key
+    - --log-level=debug
 
 # Pod annotations
 podAnnotations:

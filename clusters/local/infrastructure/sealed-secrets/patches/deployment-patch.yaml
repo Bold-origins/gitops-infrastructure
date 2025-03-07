@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sealed-secrets
+  name: sealed-secrets-controller
   namespace: sealed-secrets
 spec:
   replicas: 1  # Single replica for local development
@@ -14,12 +14,6 @@ spec:
     spec:
       containers:
       - name: sealed-secrets-controller
-        # Development-specific arguments
-        args:
-        - "--key-prefix=sealed-secrets-key"
-        - "--key-label=sealedsecrets.bitnami.com/sealed-secrets-key"
-        - "--update-status"  # Enable status updates for easier debugging
-        - "--log-level=debug"  # More verbose logging for local development
         # Development resource limits (lower than would be used in production)
         resources:
           requests:

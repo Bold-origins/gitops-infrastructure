@@ -68,7 +68,7 @@ git clone https://github.com/yourusername/cluster.git
 cd cluster
 ```
 
-### 2. Initialize Environment (Enhanced Workflow)
+### 2. Initialize Environment
 
 Use our streamlined setup script to initialize your local development environment:
 
@@ -83,27 +83,37 @@ This script will:
 - Enable required addons
 - Verify prerequisites
 
-### 3. Deploy All Components
+### 3. Deploy Components (Recommended Approach)
+
+For a more controlled, component-by-component deployment:
 
 ```bash
-./scripts/cluster/setup-all.sh
+./scripts/gitops/component-deploy.sh
 ```
 
-This script deploys the entire infrastructure stack:
-- Core infrastructure (cert-manager, sealed-secrets, vault)
-- Networking components (ingress-nginx, metallb)
-- Observability stack (prometheus, grafana, loki)
-- Applications (supabase)
+This approach provides better visibility and control over the deployment process by:
+- Deploying components one at a time
+- Verifying each component before proceeding
+- Providing detailed logs and status information
+- Tracking progress to allow resuming
 
-### 4. Verify Environment
+### 4. Monitor Deployment Progress
+
+Check the status of your deployment at any time:
 
 ```bash
-./scripts/cluster/verify-environment.sh
+./scripts/gitops/show-progress.sh
 ```
 
-This ensures all components are properly deployed and running.
+### 5. Troubleshoot Issues
 
-### 5. Access Local Services
+If you encounter problems with specific components:
+
+```bash
+./scripts/gitops/diagnose-component.sh <component-name>
+```
+
+### 6. Access Services
 
 Forward local cluster services:
 
@@ -242,3 +252,9 @@ Licensed under **MIT License**. See [LICENSE](LICENSE).
 ---
 
 Feel free to adapt these improvements to best suit your project's specifics!
+
+## Documentation
+
+- [Quick Start Guide](docs/QUICK_START.md) - Get up and running quickly
+- [Local Development Guide](docs/LOCAL_DEVELOPMENT.md) - Comprehensive guide for local development
+- [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Solutions for common issues

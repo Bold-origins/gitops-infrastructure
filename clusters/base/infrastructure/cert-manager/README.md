@@ -9,11 +9,13 @@ When creating environment overlays, consider customizing the following component
 ### 1. Cluster Issuers
 
 In `cluster-issuers.yaml`:
+
 - Replace the placeholder email (`placeholder@example.com`) with a real email address for ACME notifications
 - For production, ensure Let's Encrypt production issuer is properly configured
 - For development/staging, you might want to use only the self-signed issuer or Let's Encrypt staging
 
 Example overlay patch:
+
 ```yaml
 # patches/cluster-issuers-patch.yaml
 apiVersion: cert-manager.io/v1
@@ -28,12 +30,14 @@ spec:
 ### 2. Resource Allocation
 
 In `helm/values.yaml`:
+
 - Adjust CPU and memory limits/requests based on environment needs:
   - Local: Lower resources (current defaults are suitable)
   - Staging: Medium resources
   - Production: Higher resources, possibly multiple replicas
 
 Example production values overlay:
+
 ```yaml
 # values-production.yaml
 replicaCount: 2
@@ -68,6 +72,7 @@ cainjector:
 ### 3. Prometheus Integration
 
 - For environments with proper monitoring setup, you might want to enable ServiceMonitor:
+
 ```yaml
 prometheus:
   enabled: true
@@ -78,6 +83,7 @@ prometheus:
 ### 4. Flux/GitOps Integration
 
 The base configuration includes Flux HelmRelease and HelmRepository custom resources. If your environment:
+
 - Uses Flux: Ensure the correct namespace references and repositories
 - Doesn't use Flux: Create an alternative installation method in your overlay
 
@@ -103,6 +109,7 @@ clusters/
 ```
 
 Example overlay `kustomization.yaml`:
+
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -123,9 +130,10 @@ configMapGenerator:
 ## Example Environments
 
 This directory includes an `examples/` folder with sample overlay configurations for:
+
 - **Local**: Minimal resources, no production issuer
 - **Staging**: Medium resources, both staging and production issuers
 - **Production**: High resources with high availability (multiple replicas)
 
 These examples demonstrate proper customization for different environments and can be used
-as templates when creating your actual environment overlays. 
+as templates when creating your actual environment overlays.

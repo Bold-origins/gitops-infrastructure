@@ -1,0 +1,14 @@
+---
+# ENVIRONMENT-SPECIFIC: This HelmRepository is for Flux v2
+# In environments not using Flux or using a different namespace, this should be adjusted
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: sealed-secrets
+  namespace: flux-system
+  annotations:
+    # ENVIRONMENT-SPECIFIC: This may need to be adjusted for different environments
+    environment.config/description: "Repository for sealed-secrets Helm charts"
+spec:
+  interval: 1h
+  url: https://bitnami-labs.github.io/sealed-secrets

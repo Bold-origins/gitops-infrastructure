@@ -20,18 +20,18 @@ replicaCount: 1
 # For production, consider increasing these values
 resources:
   requests:
-    cpu: 10m     # production: consider 100m+
+    cpu: 10m # production: consider 100m+
     memory: 32Mi # production: consider 128Mi+
   limits:
-    cpu: 100m     # production: consider 300m+
-    memory: 64Mi  # production: consider 256Mi+
+    cpu: 100m # production: consider 300m+
+    memory: 64Mi # production: consider 256Mi+
 
 # ENVIRONMENT-SPECIFIC: Monitoring configuration
 # For production/staging with Prometheus, enable serviceMonitor
 prometheus:
   enabled: true
   servicemonitor:
-    enabled: false  # Set to true in environments with Prometheus Operator
+    enabled: false # Set to true in environments with Prometheus Operator
 
 # ENVIRONMENT-SPECIFIC: Adjust webhook resources based on environment
 # Webhook is critical for validating certificates - ensure adequate resources
@@ -39,22 +39,22 @@ webhook:
   enabled: true
   resources:
     requests:
-      cpu: 10m     # production: consider 50m+
+      cpu: 10m # production: consider 50m+
       memory: 32Mi # production: consider 64Mi+
     limits:
-      cpu: 100m     # production: consider 200m+
-      memory: 64Mi  # production: consider 128Mi+
+      cpu: 100m # production: consider 200m+
+      memory: 64Mi # production: consider 128Mi+
 
 # ENVIRONMENT-SPECIFIC: Adjust cainjector resources based on environment
 cainjector:
   enabled: true
   resources:
     requests:
-      cpu: 10m     # production: consider 50m+
+      cpu: 10m # production: consider 50m+
       memory: 32Mi # production: consider 64Mi+
     limits:
-      cpu: 100m     # production: consider 200m+
-      memory: 64Mi  # production: consider 128Mi+
+      cpu: 100m # production: consider 200m+
+      memory: 64Mi # production: consider 128Mi+
 
 # DNS configuration for ACME DNS01 challenges
 # These settings can remain the same across environments

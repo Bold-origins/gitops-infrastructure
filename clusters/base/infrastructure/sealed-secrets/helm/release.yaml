@@ -48,25 +48,25 @@ spec:
   #     remediateLastFailure: true
   values:
     # These values would be read from the values.yaml file
-    fullnameOverride: sealed-secrets
+    fullnameOverride: sealed-secrets-controller
     namespace: sealed-secrets
-    
+
     # ENVIRONMENT-SPECIFIC: Service account configuration
     # This is generally stable across environments
     serviceAccount:
       create: true
       name: sealed-secrets-controller
       annotations: {}
-    
+
     # ENVIRONMENT-SPECIFIC: RBAC settings
     # These permissions are generally consistent across environments
     rbac:
       create: true
-    
+
     # ENVIRONMENT-SPECIFIC: Key management
     # - production may need different key rotation policies
     secretName: sealed-secrets-key
-    
+
     # ENVIRONMENT-SPECIFIC: Resource allocation
     # - local/dev: minimal resources
     # - staging: medium resources
@@ -78,7 +78,7 @@ spec:
       limits:
         memory: "128Mi"
         cpu: "100m"
-    
+
     # ENVIRONMENT-SPECIFIC: Controller configuration
     # - Different environments may need different log levels or flags
     controller:
@@ -91,7 +91,7 @@ spec:
         - controller
       # ENVIRONMENT-SPECIFIC: Replicas for HA in production
       # replicas: 1  # Increase to 2+ for production
-    
+
     # ENVIRONMENT-SPECIFIC: Monitoring configuration
     # metrics:
     #   serviceMonitor:
@@ -108,19 +108,3 @@ spec:
 
     # ENVIRONMENT-SPECIFIC: HA settings for production
     # podAntiAffinity: false # Set to true for production
-
----
-# For reference, this is the HelmRepository CRD that would be used with Flux v2
-# ENVIRONMENT-SPECIFIC: Repository configurations may be centralized or environment-specific
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: sealed-secrets
-  namespace: flux-system
-  # ENVIRONMENT-SPECIFIC: Add environment-specific annotations if needed
-  # annotations:
-  #   environment: base
-spec:
-  # ENVIRONMENT-SPECIFIC: Sync interval may differ by environment
-  interval: 1h
-  url: https://bitnami-labs.github.io/sealed-secrets 

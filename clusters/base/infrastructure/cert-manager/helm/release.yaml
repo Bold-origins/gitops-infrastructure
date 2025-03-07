@@ -43,18 +43,3 @@ spec:
       enabled: true
     cainjector:
       enabled: true
-
----
-# ENVIRONMENT-SPECIFIC: This HelmRepository is for Flux v2
-# In environments not using Flux or using a different namespace, this should be adjusted
-apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: HelmRepository
-metadata:
-  name: jetstack
-  namespace: flux-system
-  annotations:
-    # ENVIRONMENT-SPECIFIC: This may need to be adjusted for different environments
-    environment.config/description: "Repository for cert-manager Helm charts"
-spec:
-  interval: 1h
-  url: https://charts.jetstack.io
