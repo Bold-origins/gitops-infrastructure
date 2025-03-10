@@ -1,0 +1,29 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: tempo
+  namespace: observability
+spec:
+  # Local environment values overrides
+  values:
+    tempo:
+      # Local environment: Use minimal resources for development
+      persistence:
+        enabled: true
+        size: 5Gi # Smaller storage requirement for local
+      resources:
+        requests:
+          cpu: 50m    # Lower CPU request for local
+          memory: 128Mi # Lower memory request for local
+        limits:
+          cpu: 100m    # Lower CPU limit for local
+          memory: 256Mi # Lower memory limit for local
+      # Local environment: Configure simple file-based storage
+      storage:
+        trace:
+          backend: local
+          local:
+            path: /tmp/tempo/traces
+          size: 5Gi
+      # Local environment: Retain data for 24h only
+      retention: 24h 

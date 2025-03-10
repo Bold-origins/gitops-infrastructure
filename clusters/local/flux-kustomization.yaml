@@ -10,13 +10,27 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  timeout: 10m0s
+  timeout: 30m0s
   retryInterval: 2m0s
   wait: true
   healthChecks:
+    # Core Infrastructure health checks
+    - kind: Deployment
+      name: cert-manager
+      namespace: cert-manager
+    - kind: Deployment
+      name: sealed-secrets-controller
+      namespace: sealed-secrets
+    - kind: Deployment
+      name: ingress-nginx-controller
+      namespace: ingress-nginx
+    # Stage 2 Infrastructure health checks
     - kind: Deployment
       name: vault
       namespace: vault
+    - kind: Deployment
+      name: minio
+      namespace: minio
   force: true
   decryption:
     provider: sops

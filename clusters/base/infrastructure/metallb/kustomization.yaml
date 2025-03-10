@@ -6,4 +6,5 @@ namespace: metallb-system
 resources:
 - namespace.yaml
 - release.yaml
-- ipaddresspool.yaml 
+- ipaddresspool.yaml
+- l2advertisement.yaml 

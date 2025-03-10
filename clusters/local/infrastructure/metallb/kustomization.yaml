@@ -12,6 +12,11 @@ patches:
     kind: HelmRelease
     name: metallb
     namespace: metallb-system
+- path: patches/ipaddresspool-patch.yaml
+  target:
+    kind: IPAddressPool
+    name: first-pool
+    namespace: metallb-system
 # Uncomment and add patches as needed
 # - patches/deployment-patch.yaml
 # - patches/service-patch.yaml

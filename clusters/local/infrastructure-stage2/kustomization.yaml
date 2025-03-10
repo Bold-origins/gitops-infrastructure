@@ -1,8 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - ../infrastructure/vault
-  - ../infrastructure/security
-  - ../infrastructure/policy-engine
-  - ../infrastructure/minio
-  - ../infrastructure/gatekeeper 

@@ -1,0 +1,12 @@
+---
+# Local Environment: IP Address Pool Configuration
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: first-pool
+  namespace: metallb-system
+spec:
+  # IP range for Minikube environment (based on detected Minikube IP: 192.168.49.2)
+  # We're allocating a range in the same subnet that won't conflict with Minikube itself
+  addresses:
+  - 192.168.49.100-192.168.49.200 

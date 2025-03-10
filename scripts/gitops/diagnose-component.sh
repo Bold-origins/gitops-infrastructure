@@ -1,179 +1,127 @@
 #!/bin/bash
-
-# diagnose-component.sh: Diagnose issues with a specific component
-# Provides detailed diagnostics for a component in the GitOps infrastructure
+# diagnose-component.sh: Diagnose a specific component
+# Provides detailed diagnostic information for a component
 
 set -e
 
+# Source shared libraries
+SCRIPT_DIR="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
+source "${SCRIPT_DIR}/lib/ui.sh"
+
+# Create logs directory
+mkdir -p logs/diagnostics
+
+# Display usage if no arguments provided
 if [ $# -lt 1 ]; then
+  ui_header "GitOps Component Diagnostics"
   echo "Usage: $0 <component-name>"
-  echo "Example: $0 cert-manager"
+  echo ""
+  echo "Available Components:"
+  
+  # List available components by looking for component scripts
+  for dir in infrastructure storage observability policy applications flux; do
+    if [ -d "${SCRIPT_DIR}/components/${dir}" ]; then
+      echo -e "${UI_COLOR_CYAN}${dir}:${UI_COLOR_RESET}"
+      for file in "${SCRIPT_DIR}/components/${dir}"/*.sh; do
+        if [ -f "$file" ]; then
+          component=$(basename "$file" .sh)
+          echo -e "  ${UI_COLOR_GREEN}$component${UI_COLOR_RESET}"
+        fi
+      done
+    fi
+  done
+  
   exit 1
 fi
 
-# Component to diagnose
 COMPONENT="$1"
 
-# Configuration
-LOG_DIR="logs/diagnostics"
-mkdir -p "$LOG_DIR"
-LOG_FILE="$LOG_DIR/$COMPONENT-$(date +"%Y-%m-%d_%H-%M-%S").log"
+# Find component script
+COMPONENT_SCRIPT=""
+COMPONENT_TYPE=""
+for dir in infrastructure storage observability policy applications flux; do
+  if [ -f "${SCRIPT_DIR}/components/${dir}/${COMPONENT}.sh" ]; then
+    COMPONENT_SCRIPT="${SCRIPT_DIR}/components/${dir}/${COMPONENT}.sh"
+    COMPONENT_TYPE="$dir"
+    break
+  fi
+done
 
-# Function to log messages
-log() {
-  local message="$1"
-  local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
-  echo "[$timestamp] $message" | tee -a "$LOG_FILE"
+if [ ! -f "$COMPONENT_SCRIPT" ]; then
+  ui_log_error "Component script not found for: $COMPONENT"
+  echo "Run $0 without arguments to see available components"
+  exit 1
+fi
+
+# Prepare log file
+LOG_FILE="logs/diagnostics/${COMPONENT}-$(date +"%Y-%m-%d_%H-%M-%S").log"
+touch "$LOG_FILE"
+
+# Define a function to log to both console and file
+log_to_file() {
+  echo -e "$1" | tee -a "$LOG_FILE"
 }
 
-# Map component to namespace
-get_namespace() {
-  case "$COMPONENT" in
-    "cert-manager") echo "cert-manager" ;;
-    "sealed-secrets") echo "sealed-secrets" ;;
-    "ingress") echo "ingress-nginx" ;;
-    "metallb") echo "metallb-system" ;;
-    "vault") echo "vault" ;;
-    "minio") echo "minio-system" ;;
-    "policy-engine") echo "policy-engine" ;;
-    "security") echo "security" ;;
-    "gatekeeper") echo "gatekeeper-system" ;;
-    *) echo "$COMPONENT" ;;
-  esac
-}
+# Source the component script
+source "$COMPONENT_SCRIPT"
 
-NAMESPACE=$(get_namespace)
+# Start diagnostic session
+ui_header "Component Diagnostic: $COMPONENT"
+log_to_file "Component Type: $COMPONENT_TYPE"
+log_to_file "Diagnostic Time: $(date)"
+log_to_file "Log File: $LOG_FILE"
+log_to_file ""
 
-# Display banner
-log "=========================================="
-log "   Component Diagnostic: $COMPONENT"
-log "   Namespace: $NAMESPACE"
-log "=========================================="
+# Redirect all output to both console and log file
+exec > >(tee -a "$LOG_FILE") 2>&1
 
-# Source environment variables if .env file exists
-if [ -f ".env" ]; then
-  source .env
-  log "✅ Environment variables loaded from .env file"
+# Run component-specific diagnostics
+ui_subheader "Component-Specific Diagnostics"
+if declare -f "${COMPONENT}_diagnose" >/dev/null; then
+  "${COMPONENT}_diagnose"
 else
-  log "⚠️ Warning: .env file not found"
+  ui_log_error "No specific diagnostic function found for $COMPONENT"
 fi
 
-# Check if namespace exists
-log "Checking namespace $NAMESPACE..."
-if kubectl get namespace "$NAMESPACE" &>/dev/null; then
-  log "✅ Namespace exists"
+# Check for related resources
+ui_subheader "Related Resources"
+kubectl get all -n "$NAMESPACE" 2>/dev/null || ui_log_warning "No resources found in namespace $NAMESPACE"
+
+# Summarize findings
+ui_header "Diagnostic Summary"
+NAMESPACE_EXISTS=$(kubectl get namespace "$NAMESPACE" &>/dev/null && echo "Yes" || echo "No")
+PODS_RUNNING=$(kubectl get pods -n "$NAMESPACE" -o jsonpath='{.items[?(@.status.phase=="Running")].metadata.name}' 2>/dev/null)
+PODS_FAILED=$(kubectl get pods -n "$NAMESPACE" -o jsonpath='{.items[?(@.status.phase!="Running")].metadata.name}' 2>/dev/null)
+
+echo -e "Namespace exists: ${UI_COLOR_CYAN}$NAMESPACE_EXISTS${UI_COLOR_RESET}"
+
+if [ -n "$PODS_RUNNING" ]; then
+  echo -e "Running pods: ${UI_COLOR_GREEN}$(echo "$PODS_RUNNING" | wc -w)${UI_COLOR_RESET}"
 else
-  log "❌ Namespace does not exist"
+  echo -e "Running pods: ${UI_COLOR_RED}0${UI_COLOR_RESET}"
 fi
 
-# Check Flux kustomization
-log "Checking Flux kustomization for $COMPONENT..."
-if kubectl get kustomization -n flux-system "single-$COMPONENT" &>/dev/null; then
-  log "✅ Kustomization exists, checking status..."
-  kubectl get kustomization -n flux-system "single-$COMPONENT" -o yaml
+if [ -n "$PODS_FAILED" ]; then
+  echo -e "Failed/non-running pods: ${UI_COLOR_RED}$(echo "$PODS_FAILED" | wc -w)${UI_COLOR_RESET}"
 else
-  log "❌ Kustomization does not exist"
+  echo -e "Failed/non-running pods: ${UI_COLOR_GREEN}0${UI_COLOR_RESET}"
 fi
 
-# Check local manifests
-log "Checking local manifests for $COMPONENT..."
-if [ -d "clusters/local/infrastructure/$COMPONENT" ]; then
-  log "--- Directory listing ---"
-  find "clusters/local/infrastructure/$COMPONENT" -type f | sort
-  
-  log "--- Kustomization file content ---"
-  cat "clusters/local/infrastructure/$COMPONENT/kustomization.yaml"
-  
-  log "Running kustomize build to see what would be applied..."
-  kustomize build "clusters/local/infrastructure/$COMPONENT"
-else
-  log "❌ Component directory does not exist at clusters/local/infrastructure/$COMPONENT"
+# Provide next steps
+ui_subheader "Next Steps"
+echo -e "1. Review the full diagnostic log: ${UI_COLOR_CYAN}$LOG_FILE${UI_COLOR_RESET}"
+
+if [ -n "$PODS_FAILED" ]; then
+  echo -e "2. Check logs for failed pods:"
+  for pod in $PODS_FAILED; do
+    echo -e "   ${UI_COLOR_CYAN}kubectl logs -n $NAMESPACE $pod${UI_COLOR_RESET}"
+  done
 fi
 
-# Check if there are any deployments in the namespace
-log "Checking deployments in namespace $NAMESPACE..."
-kubectl get deployments -n "$NAMESPACE" 2>/dev/null || true
+echo -e "3. To clean up and redeploy the component:"
+echo -e "   ${UI_COLOR_CYAN}${SCRIPT_DIR}/operations/clean.sh $COMPONENT${UI_COLOR_RESET}"
+echo -e "   ${UI_COLOR_CYAN}${SCRIPT_DIR}/deploy-component.sh $COMPONENT${UI_COLOR_RESET}"
 
-# Check if there are any pods in the namespace
-log "Checking pods in namespace $NAMESPACE..."
-kubectl get pods -n "$NAMESPACE" 2>/dev/null || true
+echo -e "\nDiagnostic completed successfully and saved to: $LOG_FILE"
 
-# Check events in the namespace
-log "Checking events in namespace $NAMESPACE..."
-kubectl get events -n "$NAMESPACE" --sort-by='.lastTimestamp' | tail -10 2>/dev/null || true
-
-# Check all resources in the namespace
-log "All resources in namespace $NAMESPACE..."
-kubectl get all -n "$NAMESPACE" 2>/dev/null || true
-
-# Component-specific diagnostics
-log "Checking $COMPONENT specific resources..."
-case "$COMPONENT" in
-  "cert-manager")
-    # Check for CRDs
-    kubectl get crds | grep cert-manager 2>/dev/null || log "No cert-manager CRDs found"
-    
-    # Check for cluster issuers
-    kubectl get clusterissuers 2>/dev/null || log "No ClusterIssuers found"
-    
-    # Check for issues with HelmRepository/HelmRelease
-    kubectl get helmrepository -A | grep jetstack || log "No jetstack HelmRepository found"
-    kubectl get helmrelease -n cert-manager 2>/dev/null || log "No HelmRelease found in cert-manager namespace"
-    kubectl get helmchart -A | grep cert-manager || log "No cert-manager HelmChart found"
-    
-    # Common cert-manager issues
-    log "Checking for common cert-manager issues..."
-    if kubectl get helmrepository -n cert-manager jetstack &>/dev/null && ! kubectl get helmrepository -n flux-system jetstack &>/dev/null; then
-      log "⚠️ HelmRepository exists in cert-manager namespace but not in flux-system namespace"
-      log "This may cause issues with the HelmRelease. Consider copying it to flux-system namespace."
-    fi
-    ;;
-  "sealed-secrets")
-    kubectl get -n sealed-secrets deployment sealed-secrets-controller 2>/dev/null || log "No sealed-secrets controller found"
-    kubectl get sealedsecrets --all-namespaces 2>/dev/null || log "No SealedSecrets found or CRD not installed"
-    ;;
-  "ingress")
-    kubectl get -n ingress-nginx deployment ingress-nginx-controller 2>/dev/null || log "No ingress-nginx controller found"
-    kubectl get ingress --all-namespaces 2>/dev/null || true
-    ;;
-  "metallb")
-    kubectl get -n metallb-system deployment controller 2>/dev/null || log "No MetalLB controller found"
-    kubectl get ipaddresspools -n metallb-system 2>/dev/null || log "No IPAddressPools found or CRD not installed"
-    kubectl get l2advertisements -n metallb-system 2>/dev/null || log "No L2Advertisements found or CRD not installed"
-    ;;
-  "vault")
-    kubectl get -n vault statefulset vault 2>/dev/null || log "No Vault StatefulSet found"
-    kubectl get -n vault pvc 2>/dev/null || log "No PVCs found for Vault"
-    ;;
-  # Add more component-specific checks as needed
-  *)
-    log "No specific diagnostics available for $COMPONENT"
-    ;;
-esac
-
-# Check Flux reconciliation status
-log "Checking Flux reconciliation status..."
-flux get kustomization "single-$COMPONENT" 2>/dev/null || true
-
-# Summary and recommendations
-log "=========================================="
-log "   Diagnostic Summary"
-log "=========================================="
-
-# Check for common issues and provide recommendations
-if ! kubectl get deployments -n "$NAMESPACE" 2>/dev/null | grep -q .; then
-  log "❌ No resources found for $COMPONENT in namespace $NAMESPACE"
-  log "Recommendations:"
-  log "1. Check the component's kustomization file to make sure it's correctly configured"
-  log "2. Try manually running: kubectl apply -k clusters/local/infrastructure/$COMPONENT"
-  log "3. Check for any CRDs that need to be installed first"
-fi
-
-# Check for timeout errors
-if kubectl get kustomization -n flux-system "single-$COMPONENT" -o yaml 2>/dev/null | grep -q "timeout\|exceeded"; then
-  log "⚠️ Timeout errors detected - component may need more time to initialize"
-fi
-
-log ""
-log "Diagnostic log saved to: $LOG_FILE"
-log "==========================================" 
+exit 0 

@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracing-demo
+  namespace: observability
+  labels:
+    app: tracing-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tracing-demo
+  template:
+    metadata:
+      labels:
+        app: tracing-demo
+    spec:
+      containers:
+      - name: tracing-demo
+        image: python:3.9-slim
+        command:
+        - /bin/bash
+        - -c
+        - |
+          pip install opentelemetry-api opentelemetry-sdk opentelemetry-exporter-otlp-proto-http requests flask
+          cat > app.py << 'EOF'
+          import time
+          import random
+          from flask import Flask, request
+          from opentelemetry import trace
+          from opentelemetry.sdk.trace import TracerProvider
+          from opentelemetry.sdk.trace.export import BatchSpanProcessor
+          from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+          from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+          import requests
+
+          # Configure the tracer
+          resource = Resource(attributes={
+              SERVICE_NAME: "tracing-demo-service"
+          })
+          tracer_provider = TracerProvider(resource=resource)
+          trace.set_tracer_provider(tracer_provider)
+          
+          # Configure the OTLP exporter to send traces to Tempo using HTTP
+          otlp_exporter = OTLPSpanExporter(endpoint="http://tempo.observability.svc.cluster.local:4318/v1/traces")
+          span_processor = BatchSpanProcessor(otlp_exporter)
+          tracer_provider.add_span_processor(span_processor)
+          
+          # Get a tracer
+          tracer = trace.get_tracer(__name__)
+          
+          app = Flask(__name__)
+          
+          @app.route('/')
+          def hello():
+              with tracer.start_as_current_span("hello") as span:
+                  span.set_attribute("http.method", request.method)
+                  span.set_attribute("http.url", request.url)
+                  
+                  # Add some random delay
+                  time.sleep(random.uniform(0.1, 0.5))
+                  
+                  # Make a nested call
+                  make_database_call()
+                  
+                  return "Hello from tracing demo!"
+          
+          def make_database_call():
+              # Create a new span as a child of the current span
+              with tracer.start_as_current_span("database_query") as span:
+                  span.set_attribute("db.system", "postgresql")
+                  span.set_attribute("db.operation", "SELECT")
+                  
+                  # Simulate database query time
+                  time.sleep(random.uniform(0.2, 0.8))
+                  
+                  # Sometimes add an error
+                  if random.random() < 0.3:
+                      span.set_status(trace.StatusCode.ERROR)
+                      span.record_exception(Exception("Database connection timeout"))
+          
+          if __name__ == '__main__':
+              app.run(host='0.0.0.0', port=8080)
+          EOF
+          
+          python app.py
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracing-demo
+  namespace: observability
+spec:
+  selector:
+    app: tracing-demo
+  ports:
+  - port: 8080
+    targetPort: 8080
+  type: ClusterIP
+---
+# Script to generate traffic to the demo app
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: traffic-generator
+  namespace: observability
+spec:
+  template:
+    spec:
+      containers:
+      - name: traffic-generator
+        image: curlimages/curl:7.83.1
+        command:
+        - /bin/sh
+        - -c
+        - |
+          echo "Starting traffic generation to tracing-demo service..."
+          for i in $(seq 1 50); do
+            echo "Request $i"
+            curl -s http://tracing-demo:8080/
+            sleep 2
+          done
+          echo "Traffic generation complete."
+      restartPolicy: Never
+  backoffLimit: 0 

@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: verification
-  labels:
-    app.kubernetes.io/part-of: gitops-verification
-    app.kubernetes.io/managed-by: flux

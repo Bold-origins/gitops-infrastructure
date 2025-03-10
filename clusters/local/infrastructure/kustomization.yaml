@@ -1,13 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - ingress
+  # Stage 1 - Core Infrastructure Components
   - metallb
   - cert-manager
   - sealed-secrets
-  # These will be added in stage 2
-  # - vault
-  # - security
-  # - policy-engine
-  # - minio
-  # - gatekeeper
+  - ingress
+  
+  # Stage 2 - Security and Storage Components
+  - vault
+  - security
+  - policy-engine
+  - minio
+  - gatekeeper

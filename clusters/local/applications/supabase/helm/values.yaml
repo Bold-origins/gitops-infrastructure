@@ -55,7 +55,7 @@ db:
         - postgres
     initialDelaySeconds: 3
   persistence:
-    enabled: false
+    enabled: true
   resources:
     limits:
       cpu: 250m
@@ -65,35 +65,39 @@ db:
       memory: 200Mi
 
 studio:
-  enabled: false
+  enabled: true
 
 auth:
-  enabled: false
+  enabled: true
 
 rest:
-  enabled: false
+  enabled: true
 
 realtime:
   enabled: false
 
 meta:
-  enabled: false
+  enabled: true
 
 storage:
-  enabled: false
+  enabled: true
 
 imgproxy:
   enabled: false
 
 kong:
-  enabled: false
+  enabled: true
   ingress:
     enabled: true
-    tls:
-      enabled: false
+    className: "nginx"
     annotations:
-      kubernetes.io/ingress.class: nginx
-    hostname: supabase.local
+      nginx.ingress.kubernetes.io/rewrite-target: /
+    tls: []
+    hosts:
+      - host: supabase.local
+        paths:
+          - path: /
+            pathType: Prefix
 
 analytics:
   enabled: false

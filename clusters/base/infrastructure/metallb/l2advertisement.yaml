@@ -1,0 +1,17 @@
+---
+# Default L2Advertisement configuration for MetalLB
+# This advertises the IP addresses from the first-pool using Layer 2 mode
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2-advertisement
+  namespace: metallb-system
+spec:
+  # Reference to the IP address pool
+  ipAddressPools:
+  - first-pool
+  
+  # Optional settings (commented out by default - uncomment if needed):
+  # interfaces:
+  # - eth0
+  # - wlan0 

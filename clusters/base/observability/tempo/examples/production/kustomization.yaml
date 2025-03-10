@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: observability
+
+# Reference the base configuration
+resources:
+  - ../../base
+  - ../../config/grafana-datasource.yaml
+  - aws-secret.yaml
+  - network-policy.yaml
+  - pdb.yaml
+
+# Apply production environment specific patches
+patchesStrategicMerge:
+  - values-patch.yaml
+
+# Add environment-specific labels
+commonLabels:
+  environment: production
+  app.kubernetes.io/environment: production
+  tier: critical 

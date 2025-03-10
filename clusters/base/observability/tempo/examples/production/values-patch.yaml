@@ -1,0 +1,78 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: tempo
+  namespace: observability
+spec:
+  # Production environment values overrides
+  values:
+    # Production: Add pod disruption budget
+    podDisruptionBudget:
+      enabled: true
+      maxUnavailable: 1
+    # Production: Enable ingress
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: letsencrypt-prod
+      hosts:
+        - host: tempo.example.com
+          paths:
+            - path: /
+              pathType: Prefix
+      tls:
+        - secretName: tempo-tls
+          hosts:
+            - tempo.example.com
+    tempo:
+      # Production: Higher resource allocation
+      persistence:
+        enabled: true
+        size: 100Gi # Larger storage for production
+        storageClassName: "premium-ssd"
+      resources:
+        requests:
+          cpu: 1000m    # Higher CPU request for production
+          memory: 4Gi   # Higher memory request for production
+        limits:
+          cpu: 2000m    # Higher CPU limit for production
+          memory: 8Gi   # Higher memory limit for production
+      # Production: Configure enterprise-grade storage
+      storage:
+        trace:
+          backend: s3
+          s3:
+            bucket: tempo-traces-production
+            endpoint: s3.amazonaws.com
+            region: us-west-2
+            access_key: ${AWS_ACCESS_KEY_ID}
+            secret_key: ${AWS_SECRET_ACCESS_KEY}
+            insecure: false
+          size: 500Gi
+      # Production: Retain data for 30 days
+      retention: 720h
+      # Enable replication for high availability
+      replicas: 3
+      # Production: Comprehensive monitoring
+      metricsGenerator:
+        enabled: true
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+      # Production: Configure alerts
+      serviceMonitor:
+        enabled: true
+        additionalLabels:
+          prometheus: kube-prometheus-stack
+      # Production: Configure autoscaling
+      autoscaling:
+        enabled: true
+        minReplicas: 3
+        maxReplicas: 10
+        targetCPUUtilizationPercentage: 80
+        targetMemoryUtilizationPercentage: 80 

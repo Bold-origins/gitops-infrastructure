@@ -19,7 +19,7 @@ patches:
       kind: HelmRelease
       name: supabase
 
-# Generate ConfigMap from values.yaml file
+# Replace the ConfigMap generated in the base kustomization
 configMapGenerator:
 - name: supabase-values
   behavior: replace
@@ -28,6 +28,10 @@ configMapGenerator:
   # Add timestamp to ensure ConfigMap gets updated
   literals:
   - last_update_timestamp="2025-03-06T19:44:00Z"
+
+# This ensures kustomize doesn't add a hash suffix to the ConfigMap name
+generatorOptions:
+  disableNameSuffixHash: true
 
 labels:
   - pairs:
