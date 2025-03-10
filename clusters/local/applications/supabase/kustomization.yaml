@@ -5,13 +5,8 @@ namespace: supabase
 
 resources:
   - ../../../base/applications/supabase
-  # Local development secrets
-  - secrets/analytics-secret.yaml
-  - secrets/db-secret.yaml
-  - secrets/jwt-secret.yaml
-  - secrets/s3-secret.yaml
-  - secrets/dashboard-secret.yaml
-  - secrets/smtp-secret.yaml
+  # Sealed secrets for local development
+  - sealed-secrets
 
 patches:
   - path: patches/helmrelease-patch.yaml
