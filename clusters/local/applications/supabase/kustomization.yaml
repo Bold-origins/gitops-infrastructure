@@ -9,7 +9,35 @@ resources:
   - sealed-secrets
 
 patches:
+  # Patch for HelmRelease settings
   - path: patches/helmrelease-patch.yaml
+    target:
+      kind: HelmRelease
+      name: supabase
+  
+  # Patch for image versions (JSON 6902 patch)
+  - patch: |-
+      - op: replace
+        path: /spec/values/db/image/tag
+        value: $DB_VERSION
+      - op: replace
+        path: /spec/values/studio/image/tag
+        value: $STUDIO_VERSION
+      - op: replace
+        path: /spec/values/auth/image/tag
+        value: $AUTH_VERSION
+      - op: replace
+        path: /spec/values/rest/image/tag
+        value: $REST_VERSION
+      - op: replace
+        path: /spec/values/meta/image/tag
+        value: $META_VERSION
+      - op: replace
+        path: /spec/values/storage/image/tag
+        value: $STORAGE_VERSION
+      - op: replace
+        path: /spec/values/kong/image/tag
+        value: $KONG_VERSION
     target:
       kind: HelmRelease
       name: supabase
@@ -24,9 +52,19 @@ configMapGenerator:
   literals:
   - last_update_timestamp="2025-03-06T19:44:00Z"
 
+# Generate the versions ConfigMap from the central versions file
+- name: supabase-versions
+  behavior: create
+  files:
+  - versions.yaml=../../../base/applications/supabase/versions.yaml
+
 # This ensures kustomize doesn't add a hash suffix to the ConfigMap name
 generatorOptions:
   disableNameSuffixHash: true
+
+# Environment-specific settings that differ from base
+transformers:
+  - transformers/versions.yaml  # Will replace $variables with actual versions
 
 labels:
   - pairs:

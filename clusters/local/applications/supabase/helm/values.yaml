@@ -10,7 +10,7 @@ secret:
   existingSecretKeys:
     anonKey: anonKey
     serviceKey: serviceKey
-    jwtSecret: jwtSecret
+    jwtSecret: secret
 
   smtp:
     existingSecret: supabase-smtp
@@ -66,27 +66,78 @@ db:
 
 studio:
   enabled: true
+  image:
+    tag: "20240326-5e5586d"
 
 auth:
   enabled: true
+  image:
+    tag: "v2.143.0"
+  environment:
+    # API Configuration
+    API_EXTERNAL_URL: "http://example.com"
+    GOTRUE_API_HOST: "0.0.0.0"
+    GOTRUE_API_PORT: "9999"
+    GOTRUE_SITE_URL: "http://example.com"
+    GOTRUE_URI_ALLOW_LIST: "*"
+    
+    # Database Configuration
+    DB_DRIVER: "postgres"
+    DB_PORT: "5432"
+    DB_SSL: "disable"
+    DB_USER: "supabase_auth_admin"
+    DB_HOST: "supabase-supabase-db"
+    
+    # JWT Configuration
+    GOTRUE_JWT_ADMIN_ROLES: "service_role"
+    GOTRUE_JWT_AUD: "authenticated"
+    GOTRUE_JWT_DEFAULT_GROUP_NAME: "authenticated"
+    GOTRUE_JWT_EXP: "3600"
+    
+    # Auth Settings
+    GOTRUE_DISABLE_SIGNUP: "false"
+    GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+    GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+    GOTRUE_SMS_AUTOCONFIRM: "false"
+    
+    # URL Paths
+    GOTRUE_MAILER_URLPATHS_CONFIRMATION: "/auth/v1/verify"
+    GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "/auth/v1/verify"
+    GOTRUE_MAILER_URLPATHS_INVITE: "/auth/v1/verify"
+    GOTRUE_MAILER_URLPATHS_RECOVERY: "/auth/v1/verify"
+    
+    # SMTP Configuration
+    GOTRUE_SMTP_ADMIN_EMAIL: "admin@example.com"
+    GOTRUE_SMTP_HOST: "smtp.example.com"
+    GOTRUE_SMTP_PORT: "587"
+    GOTRUE_SMTP_SENDER_NAME: "Supabase"
+    GOTRUE_MAILER_AUTOCONFIRM: "true"
 
 rest:
   enabled: true
+  image:
+    tag: "v12.0.1"
 
 realtime:
   enabled: false
 
 meta:
   enabled: true
+  image:
+    tag: "v0.77.2"
 
 storage:
   enabled: true
+  image:
+    tag: "v0.46.4"
 
 imgproxy:
   enabled: false
 
 kong:
   enabled: true
+  image:
+    tag: "2.8.1"
   ingress:
     enabled: true
     className: "nginx"

@@ -10,7 +10,7 @@ secret:
   existingSecretKeys:
     anonKey: anonKey
     serviceKey: serviceKey
-    jwtSecret: jwtSecret
+    jwtSecret: secret
 
   smtp:
     existingSecret: supabase-smtp
@@ -46,7 +46,8 @@ secret:
 db:
   enabled: true
   image:
-    tag: 15.1.0.147
+    repository: supabase/postgres
+    pullPolicy: IfNotPresent
   livenessProbe:
     exec:
       command:
@@ -66,27 +67,84 @@ db:
 
 studio:
   enabled: false
+  image:
+    repository: supabase/studio
+    pullPolicy: IfNotPresent
 
 auth:
   enabled: false
+  image:
+    repository: supabase/gotrue
+    pullPolicy: IfNotPresent
+  environment:
+    API_EXTERNAL_URL: "http://localhost:8000"
+    GOTRUE_API_HOST: "0.0.0.0"
+    GOTRUE_API_PORT: "9999"
+    GOTRUE_SITE_URL: "http://localhost:8000"
+    GOTRUE_URI_ALLOW_LIST: "*"
+    
+    DB_DRIVER: "postgres"
+    DB_PORT: "5432"
+    DB_SSL: "disable"
+    DB_USER: "supabase_auth_admin"
+    DB_HOST: "supabase-supabase-db"
+    
+    GOTRUE_JWT_ADMIN_ROLES: "service_role"
+    GOTRUE_JWT_AUD: "authenticated"
+    GOTRUE_JWT_DEFAULT_GROUP_NAME: "authenticated"
+    GOTRUE_JWT_EXP: "3600"
+    
+    GOTRUE_DISABLE_SIGNUP: "false"
+    GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+    GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+    GOTRUE_SMS_AUTOCONFIRM: "false"
+    
+    GOTRUE_MAILER_URLPATHS_CONFIRMATION: "/auth/v1/verify"
+    GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: "/auth/v1/verify"
+    GOTRUE_MAILER_URLPATHS_INVITE: "/auth/v1/verify"
+    GOTRUE_MAILER_URLPATHS_RECOVERY: "/auth/v1/verify"
+    
+    GOTRUE_SMTP_ADMIN_EMAIL: "admin@example.com"
+    GOTRUE_SMTP_HOST: "smtp.example.com"
+    GOTRUE_SMTP_PORT: "587"
+    GOTRUE_SMTP_SENDER_NAME: "Supabase"
+    GOTRUE_MAILER_AUTOCONFIRM: "true"
 
 rest:
   enabled: false
+  image:
+    repository: postgrest/postgrest
+    pullPolicy: IfNotPresent
 
 realtime:
   enabled: false
+  image:
+    repository: supabase/realtime
+    pullPolicy: IfNotPresent
 
 meta:
   enabled: false
+  image:
+    repository: supabase/postgres-meta
+    pullPolicy: IfNotPresent
 
 storage:
   enabled: false
+  image:
+    repository: supabase/storage-api
+    pullPolicy: IfNotPresent
 
 imgproxy:
   enabled: false
+  image:
+    repository: darthsim/imgproxy
+    pullPolicy: IfNotPresent
 
 kong:
   enabled: false
+  image:
+    repository: kong
+    pullPolicy: IfNotPresent
   ingress:
     enabled: true
     tls:
@@ -97,9 +155,18 @@ kong:
 
 analytics:
   enabled: false
+  image:
+    repository: supabase/logflare
+    pullPolicy: IfNotPresent
 
 vector:
   enabled: false
+  image:
+    repository: timberio/vector
+    pullPolicy: IfNotPresent
 
 functions:
-  enabled: false 
+  enabled: false
+  image:
+    repository: supabase/edge-runtime
+    pullPolicy: IfNotPresent 

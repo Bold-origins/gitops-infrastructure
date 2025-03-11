@@ -1,0 +1,40 @@
+# Supabase component versions
+# This file serves as the single source of truth for Supabase component versions
+# across environments. Update this file when upgrading components.
+
+versions:
+  # Database
+  db: "15.1.0.147"
+  
+  # Studio UI
+  studio: "20240326-5e5586d"
+  
+  # Authentication service
+  auth: "v2.143.0"
+  
+  # REST API
+  rest: "v12.0.1"
+  
+  # Realtime service
+  realtime: "v2.27.5"
+  
+  # Postgres metadata service
+  meta: "v0.77.2"
+  
+  # Storage service
+  storage: "v0.46.4"
+  
+  # Image proxy
+  imgproxy: "v3.8.0"
+  
+  # API Gateway
+  kong: "2.8.1"
+  
+  # Analytics
+  analytics: "1.4.0"
+  
+  # Log aggregation
+  vector: "0.34.0-alpine"
+  
+  # Edge functions
+  functions: "v1.36.1" 

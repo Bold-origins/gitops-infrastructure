@@ -1,0 +1,103 @@
+apiVersion: builtin
+kind: ReplacementTransformer
+metadata:
+  name: versions-transformer
+replacements:
+  - source:
+      kind: ConfigMap
+      name: supabase-versions
+      fieldPath: data.versions.db
+    targets:
+      - select:
+          kind: HelmRelease
+          name: supabase
+        fieldPaths:
+          - "/spec/values/db/image/tag"
+        options:
+          create: true
+    # Using variable reference so kustomize can substitute
+    regexp: '\$DB_VERSION'
+  
+  - source:
+      kind: ConfigMap
+      name: supabase-versions
+      fieldPath: data.versions.studio
+    targets:
+      - select:
+          kind: HelmRelease
+          name: supabase
+        fieldPaths:
+          - "/spec/values/studio/image/tag"
+        options:
+          create: true
+    regexp: '\$STUDIO_VERSION'
+  
+  - source:
+      kind: ConfigMap
+      name: supabase-versions
+      fieldPath: data.versions.auth
+    targets:
+      - select:
+          kind: HelmRelease
+          name: supabase
+        fieldPaths:
+          - "/spec/values/auth/image/tag"
+        options:
+          create: true
+    regexp: '\$AUTH_VERSION'
+  
+  - source:
+      kind: ConfigMap
+      name: supabase-versions
+      fieldPath: data.versions.rest
+    targets:
+      - select:
+          kind: HelmRelease
+          name: supabase
+        fieldPaths:
+          - "/spec/values/rest/image/tag"
+        options:
+          create: true
+    regexp: '\$REST_VERSION'
+  
+  - source:
+      kind: ConfigMap
+      name: supabase-versions
+      fieldPath: data.versions.meta
+    targets:
+      - select:
+          kind: HelmRelease
+          name: supabase
+        fieldPaths:
+          - "/spec/values/meta/image/tag"
+        options:
+          create: true
+    regexp: '\$META_VERSION'
+  
+  - source:
+      kind: ConfigMap
+      name: supabase-versions
+      fieldPath: data.versions.storage
+    targets:
+      - select:
+          kind: HelmRelease
+          name: supabase
+        fieldPaths:
+          - "/spec/values/storage/image/tag"
+        options:
+          create: true
+    regexp: '\$STORAGE_VERSION'
+  
+  - source:
+      kind: ConfigMap
+      name: supabase-versions
+      fieldPath: data.versions.kong
+    targets:
+      - select:
+          kind: HelmRelease
+          name: supabase
+        fieldPaths:
+          - "/spec/values/kong/image/tag"
+        options:
+          create: true
+    regexp: '\$KONG_VERSION' 
