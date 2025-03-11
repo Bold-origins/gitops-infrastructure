@@ -1,0 +1,13 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: supabase-supabase-auth
+  namespace: supabase
+spec:
+  template:
+    spec:
+      containers:
+      - name: supabase-auth
+        env:
+        - name: GOTRUE_SMTP_PORT
+          value: "587" 

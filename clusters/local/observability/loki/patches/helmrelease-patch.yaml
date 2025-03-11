@@ -14,3 +14,17 @@ spec:
         memory: "128Mi"
         cpu: "100m"
     replicaCount: 1  # Single replica for local development
+    # Configure grafana datasource settings to ensure Loki is not default
+    grafana:
+      enabled: false  # Keep disabled as we use Prometheus stack's Grafana
+      datasources:
+        datasources.yaml:
+          apiVersion: 1
+          datasources:
+          - name: Loki
+            type: loki
+            access: proxy
+            url: "http://loki-stack:3100"
+            version: 1
+            isDefault: false
+            jsonData: {}

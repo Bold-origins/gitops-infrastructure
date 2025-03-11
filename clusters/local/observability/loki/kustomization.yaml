@@ -10,3 +10,4 @@ patchesStrategicMerge:
 # Uncomment and add patches as needed
 # - patches/deployment-patch.yaml
 # - patches/service-patch.yaml
+- patches/helmrelease-patch.yaml

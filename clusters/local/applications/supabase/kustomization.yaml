@@ -15,6 +15,9 @@ patches:
       kind: HelmRelease
       name: supabase
   
+  # Patch to fix the SMTP_PORT issue
+  - path: patches/deployment-auth-patch.yaml
+  
   # Patch for image versions (JSON 6902 patch)
   - patch: |-
       - op: replace
@@ -56,7 +59,7 @@ configMapGenerator:
 - name: supabase-versions
   behavior: create
   files:
-  - versions.yaml=../../../base/applications/supabase/versions.yaml
+  - values.yaml=versions.yaml
 
 # This ensures kustomize doesn't add a hash suffix to the ConfigMap name
 generatorOptions:
@@ -65,7 +68,11 @@ generatorOptions:
 # Environment-specific settings that differ from base
 transformers:
   - transformers/versions.yaml  # Will replace $variables with actual versions
+  # Remove or comment out the reference to the non-existent file
+  # - ../../../base/applications/supabase/transformers/versions-transformer.yaml
 
 labels:
   - pairs:
-      app.kubernetes.io/part-of: supabase 
+      app.kubernetes.io/part-of: supabase
+  - pairs:
+      app.kubernetes.io/managed-by: flux 
