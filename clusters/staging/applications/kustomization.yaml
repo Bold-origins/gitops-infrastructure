@@ -7,9 +7,6 @@ commonLabels:
   managed-by: kustomize
 
 resources:
-  # Reference the base applications directory
-  - ../../../base/applications
-  
   # Include specific applications for staging
   # Initially we'll move our test-app to this structure
   - test-app
