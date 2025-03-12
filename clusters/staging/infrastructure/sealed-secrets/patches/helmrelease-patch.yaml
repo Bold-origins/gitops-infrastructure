@@ -6,6 +6,12 @@ metadata:
 spec:
   # Staging environment specific settings
   interval: 15m  # Less frequent reconciliation for staging
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: sealed-secrets
+        namespace: sealed-secrets
   values:
     resources:
       requests:

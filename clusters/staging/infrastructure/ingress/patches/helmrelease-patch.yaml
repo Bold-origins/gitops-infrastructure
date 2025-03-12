@@ -4,6 +4,12 @@ metadata:
   name: ingress-nginx
   namespace: ingress-nginx
 spec:
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: ingress-nginx
+        namespace: ingress-nginx
   values:
     controller:
       # Staging-specific values

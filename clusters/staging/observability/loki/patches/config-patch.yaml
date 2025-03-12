@@ -5,6 +5,12 @@ metadata:
   namespace: observability
 spec:
   interval: 15m
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+        namespace: observability
   values:
     loki:
       auth_enabled: false

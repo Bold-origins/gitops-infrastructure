@@ -6,6 +6,12 @@ metadata:
 spec:
   # Staging environment specific settings
   interval: 15m  # Less frequent reconciliation for staging
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: gatekeeper
+        namespace: gatekeeper-system
   values:
     replicas: 1
     resources:
