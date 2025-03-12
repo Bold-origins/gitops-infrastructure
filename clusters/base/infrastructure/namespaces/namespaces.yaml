@@ -1,0 +1,94 @@
+---
+# Infrastructure namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gatekeeper-system
+  labels:
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress-nginx
+  labels:
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: metallb-system
+  labels:
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minio
+  labels:
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: policy-engine
+  labels:
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sealed-secrets
+  labels:
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security
+  labels:
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault
+  labels:
+    tier: infrastructure
+---
+# Observability namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    tier: observability
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: loki
+  labels:
+    tier: observability
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tempo
+  labels:
+    tier: observability
+---
+# Application namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: supabase
+  labels:
+    tier: applications 

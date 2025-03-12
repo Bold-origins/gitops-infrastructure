@@ -1,82 +1,42 @@
-# Staging Environment Setup Progress
+# Project Progress Tracking
 
-## Completed Tasks
+This document tracks the progress of all planned and ongoing initiatives for the GitOps infrastructure repository.
 
-### VPS Setup and Security (Completed)
-- [x] Provisioned VPS at IP 91.108.112.146
-- [x] Created non-root user `boldman` with administrative privileges
-- [x] Configured SSH key authentication for `boldman`
-- [x] Disabled root login via SSH 
-- [x] Disabled password authentication for enhanced security
-- [x] Added SSH config locally for convenient access
-- [x] Verified secure SSH access to the VPS
+## Current Initiatives
 
-### Kubernetes Setup (k3s) (Completed)
-- [x] Install k3s on the VPS
-- [x] Configure k3s for optimal performance
-- [x] Set up kubectl locally to manage the cluster
-- [x] Verify k3s functionality
-- [x] Deploy test application (Nginx) and verify external access
+| Initiative | Status | Start Date | Target Completion | Owner | Links |
+|------------|--------|------------|-------------------|-------|-------|
+| Namespace Centralization | In Progress | 2025-03-12 | 2025-03-17 | DevOps Team | [Initiative Doc](initiatives/2025-03-12-namespace-centralization.md), [ADR-0001](decisions/ADR-0001-namespace-management.md) |
 
-### GitOps Structure (Completed)
-- [x] Created directory structure for staging environment
-- [x] Set up kustomization files for staging
-- [x] Created flux configuration files
-- [x] Configured ingress for staging
-- [x] Adapted test application to GitOps structure
-- [x] Set up observability stack structure
+## Completed Initiatives
 
-### Domain and Certificate Configuration (Completed)
-- [x] Configured domain information (boldorigins.io)
-- [x] Set up TLS certificate issuers with Let's Encrypt
-- [x] Updated configuration with admin email
-- [x] Added DNS configuration information to documentation
+| Initiative | Completion Date | Outcome | Lessons Learned |
+|------------|-----------------|---------|----------------|
+| *None yet* | | | |
 
-### Networking and Firewall (Completed)
-- [x] Configure basic firewall rules
-- [x] Set up domain names and DNS records
-- [x] Configure ingress controller for the cluster
+## Planned Initiatives
 
-### Infrastructure Components (Completed)
-- [x] Set up sealed-secrets for secure credentials management
-- [x] Configure vault for secrets management
-- [x] Set up MinIO for object storage
-- [x] Configure Gatekeeper for policy enforcement
-- [x] Set up infrastructure-level components (Prometheus, Loki, Tempo)
+| Initiative | Priority | Tentative Start | Dependencies | Notes |
+|------------|----------|-----------------|--------------|-------|
+| | | | | |
 
-### Observability Stack (Completed)
-- [x] Set up Grafana for visualization
-- [x] Configure Prometheus for metrics collection
-- [x] Set up Loki for log aggregation
-- [x] Configure Tempo for distributed tracing
-- [x] Set up OpenTelemetry for telemetry collection
-- [x] Configure network monitoring
-- [x] Set up common monitoring components
+## Backlog
 
-### Applications (Completed)
-- [x] Set up Supabase application configuration for staging
+- Optimize resource limits for all components
+- Implement canary deployments for critical services
+- Improve GitOps workflow documentation
 
-### Deployment Pipeline Configuration (In Progress)
-- [x] Created Flux CD installation scripts
-- [ ] Set up Flux CD on the staging cluster
-- [ ] Configure container registry
-- [ ] Create deployment templates
+## Initiative Details
 
-## In Progress
+### Namespace Centralization
+**Status**: In Progress  
+**Description**: Implementing a centralized namespace management approach to ensure consistency across environments while maintaining component ownership principles.  
+**Key Milestones**:
+- [x] Planning and architecture documentation (2025-03-12)
+- [ ] Implementation of base structure (2025-03-13)
+- [ ] Implementation of staging environment (2025-03-14)
+- [ ] Testing and validation (2025-03-15)
+- [ ] Documentation and patterns (2025-03-16)
+- [ ] Review and finalization (2025-03-17)
 
-### Deployment Pipeline
-- [ ] Execute Flux CD installation on the staging cluster
-- [ ] Test GitOps workflow with initial deployments
-- [ ] Establish CI/CD integration with GitHub
-
-### Monitoring and Alerting
-- [ ] Set up alerts and notifications
-- [ ] Configure dashboards
-- [ ] Implement SLO/SLI tracking
-
-## Next Steps
-1. Execute the Flux CD installation script on the staging cluster
-2. Verify the GitOps configuration deployment process
-3. Test monitoring and logging components
-4. Set up CI/CD pipeline for deployments
-5. Implement application rollout strategy 
+**Blockers**: None 

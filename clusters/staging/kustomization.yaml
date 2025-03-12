@@ -11,19 +11,10 @@ commonAnnotations:
   source: "gitops-infrastructure"
 
 resources:
-  # Start with just namespaces for now
+  # Start with namespaces first to ensure they exist before other resources
   - infrastructure/namespaces
 
-# Using commonLabels for consistent labeling
-commonLabels:
-  environment: staging
-  managed-by: kustomize
-
-# Common annotations to be added to all resources
-commonAnnotations:
-  source: "gitops-infrastructure"
-
-resources:
+  # Then add infrastructure components
   - infrastructure/cert-manager
   - infrastructure/sealed-secrets
   - infrastructure/vault
@@ -32,9 +23,10 @@ resources:
   # Applications components
   - applications
 
-  # Infrastructure layer is fully added, now adding applications
+  # Additional infrastructure components
   - infrastructure/ingress
-  # Adding observability stack
+  
+  # Observability stack
   - observability/grafana
   - observability/prometheus
   - observability/loki 
