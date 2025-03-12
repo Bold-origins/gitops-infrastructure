@@ -10,3 +10,6 @@ commonAnnotations:
   monitoring.enabled: "true"
 patchesStrategicMerge:
 - patches/helmrelease-patch.yaml 
+# Use transformers to exclude the namespace
+transformers:
+- transformers/remove-namespace.yaml

@@ -8,3 +8,6 @@ resources:
 # Apply staging-specific patches
 patchesStrategicMerge:
 - patches/helmrelease-patch.yaml 
+# Use transformers to exclude the namespace
+transformers:
+- transformers/remove-namespace.yaml

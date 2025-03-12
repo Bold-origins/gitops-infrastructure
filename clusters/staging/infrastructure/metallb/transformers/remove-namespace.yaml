@@ -1,0 +1,13 @@
+apiVersion: builtin
+kind: PatchTransformer
+metadata:
+  name: remove-namespace
+target:
+  kind: Namespace
+  name: metallb-system
+patch: |
+  $patch: delete
+  apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: metallb-system
