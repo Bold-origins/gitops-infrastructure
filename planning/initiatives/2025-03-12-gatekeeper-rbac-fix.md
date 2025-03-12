@@ -26,9 +26,20 @@ This initiative addresses the current RBAC permission issues with Gatekeeper tha
 ### Root Cause Analysis
 The Gatekeeper HelmRelease patch specifies namespaces for component HelmRepositories but does not include proper RBAC configurations required by Gatekeeper. This appears to be a common issue when deploying Gatekeeper through GitOps tools like Flux.
 
-## Action Plan
+## Revised Action Plan
 
-### Short-term Actions (GitOps-compliant)
+### Immediate Actions
+1. Implement a phased approach to deploy core infrastructure first:
+   - Namespaces
+   - Cert-Manager
+   - Sealed-Secrets
+   - Ingress Controller
+   - MetalLB
+2. Temporarily exclude Gatekeeper and other non-critical components
+3. Once core infrastructure is stable, reintroduce Gatekeeper with proper RBAC
+4. Update all HelmReleases to correctly reference their namespace-scoped HelmRepositories
+
+### Medium-term Actions (GitOps-compliant)
 1. Create a proper ClusterRoleBinding for the Gatekeeper controller-manager ServiceAccount
 2. Fix the Gatekeeper HelmRelease to include the necessary RBAC configurations
 3. Update relevant kustomization files to include the new RBAC resources
@@ -40,17 +51,19 @@ The Gatekeeper HelmRelease patch specifies namespaces for component HelmReposito
 3. Implement monitoring for Gatekeeper webhook availability
 
 ## Testing
-1. Verify Gatekeeper pods are running correctly without restarts
-2. Validate that Flux can reconcile resources without webhook errors
-3. Test that Gatekeeper policies are properly enforced
+1. Verify core infrastructure components deploy successfully
+2. Once stable, add Gatekeeper back and verify pods are running correctly without restarts
+3. Validate that Flux can reconcile resources without webhook errors
+4. Test that Gatekeeper policies are properly enforced
 
 ## Rollback
 If the changes cause additional issues:
-1. Revert the commits related to the RBAC changes
+1. Revert the commits related to the problematic component
 2. Push the reverted changes to the repository
 3. Monitor Flux reconciliation to ensure system returns to a stable state
 
 ## Timeline
-- Day 1: Implement and test RBAC fixes
-- Day 2: Document solution and update relevant documentation
-- Day 3: Review implementation and ensure stability 
+- Day 1: Implement core infrastructure components
+- Day 2: Verify core infrastructure stability, then implement Gatekeeper RBAC fixes
+- Day 3: Test and document solution, update relevant documentation
+- Day 4: Review implementation and ensure stability 

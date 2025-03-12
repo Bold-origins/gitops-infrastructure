@@ -14,20 +14,16 @@ resources:
   # Start with namespaces first to ensure they exist before other resources
   - infrastructure/namespaces
 
-  # Then add infrastructure components
+  # Core infrastructure components in dependency order
   - infrastructure/cert-manager
   - infrastructure/sealed-secrets
-  - infrastructure/vault
-  - infrastructure/gatekeeper
+  - infrastructure/ingress
   - infrastructure/metallb
 
-  # Applications components
-  - applications
-
-  # Additional infrastructure components
-  - infrastructure/ingress
-  
-  # Observability stack
-  - observability/grafana
-  - observability/prometheus
-  - observability/loki 
+  # The following components are commented out until core components are stable
+  # - infrastructure/vault
+  # - infrastructure/gatekeeper
+  # - applications
+  # - observability/grafana
+  # - observability/prometheus
+  # - observability/loki 
