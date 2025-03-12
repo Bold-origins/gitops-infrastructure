@@ -3,7 +3,7 @@ kind: Kustomization
 
 # Reference the base sealed-secrets configuration
 resources:
-- ../../../../base/infrastructure/sealed-secrets
+- ../../../../clusters/base/infrastructure/sealed-secrets
 
 # Common labels for all resources
 commonLabels:

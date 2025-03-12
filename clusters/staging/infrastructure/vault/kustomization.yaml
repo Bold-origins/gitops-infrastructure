@@ -3,7 +3,7 @@ kind: Kustomization
 
 # Reference the base vault configuration
 resources:
-- ../../../../base/infrastructure/vault
+- ../../../../clusters/base/infrastructure/vault
 
 # Common labels for all resources
 commonLabels:

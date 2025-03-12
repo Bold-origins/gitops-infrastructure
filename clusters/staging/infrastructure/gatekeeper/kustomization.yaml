@@ -3,7 +3,7 @@ kind: Kustomization
 
 # Reference the base gatekeeper configuration
 resources:
-- ../../../../base/infrastructure/gatekeeper
+- ../../../../clusters/base/infrastructure/gatekeeper
 
 # Common labels for all resources
 commonLabels:
