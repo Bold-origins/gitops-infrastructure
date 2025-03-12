@@ -1,0 +1,32 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: opentelemetry-collector
+  namespace: monitoring
+spec:
+  interval: 15m
+  values:
+    mode: deployment
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    config:
+      exporters:
+        otlp:
+          endpoint: tempo.tempo.svc.cluster.local:4317
+          tls:
+            insecure: true
+        loki:
+          endpoint: http://loki-gateway.loki.svc.cluster.local:80/loki/api/v1/push
+      service:
+        pipelines:
+          traces:
+            exporters: [otlp]
+          logs:
+            exporters: [loki]
+    serviceMonitor:
+      enabled: true 

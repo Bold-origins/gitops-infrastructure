@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Common labels for all observability resources
+commonLabels:
+  component: observability
+  environment: staging
+
+resources:
+  # Core observability components
+  - common/
+  - prometheus/
+  - grafana/
+  - loki/
+  # Additional components
+  - network/
+  - opentelemetry/
+  - tempo/ 

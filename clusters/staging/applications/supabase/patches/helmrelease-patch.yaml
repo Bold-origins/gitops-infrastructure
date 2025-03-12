@@ -1,0 +1,89 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: supabase
+  namespace: supabase
+spec:
+  # Staging environment specific settings
+  interval: 15m  # Less frequent reconciliation for staging
+  values:
+    # Configure PostgreSQL for staging
+    postgresql:
+      resources:
+        requests:
+          memory: 512Mi
+          cpu: 200m
+        limits:
+          memory: 1Gi
+          cpu: 500m
+      persistence:
+        size: 10Gi
+      
+    # Configure Kong API Gateway
+    kong:
+      resources:
+        requests:
+          memory: 256Mi
+          cpu: 100m
+        limits:
+          memory: 512Mi
+          cpu: 200m
+      ingress:
+        enabled: true
+        ingressClassName: nginx
+        hostname: supabase.staging.boldorigins.io
+        tls: true
+        
+    # Configure GoTrue (Auth)
+    gotrue:
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
+        limits:
+          memory: 256Mi
+          cpu: 100m
+      env:
+        SITE_URL: https://supabase.staging.boldorigins.io
+        ADDITIONAL_REDIRECT_URLS: ""
+        JWT_EXPIRY: 3600
+        DISABLE_SIGNUP: "false"
+        
+    # Configure PostgREST
+    postgrest:
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
+        limits:
+          memory: 256Mi
+          cpu: 100m
+          
+    # Configure Storage
+    storage:
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
+        limits:
+          memory: 256Mi
+          cpu: 100m
+      persistence:
+        size: 10Gi
+        
+    # Configure Studio
+    studio:
+      enabled: true
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 50m
+        limits:
+          memory: 256Mi
+          cpu: 100m
+          
+    # Configure metrics
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true

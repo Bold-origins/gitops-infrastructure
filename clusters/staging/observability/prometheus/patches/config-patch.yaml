@@ -1,0 +1,38 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: prometheus
+  namespace: monitoring
+spec:
+  interval: 15m
+  values:
+    server:
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      persistentVolume:
+        size: 20Gi
+        storageClass: local-path
+    alertmanager:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 128Mi
+        limits:
+          cpu: 100m
+          memory: 256Mi
+      persistentVolume:
+        size: 5Gi
+        storageClass: local-path
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - prometheus.staging.boldorigins.io
+      tls:
+        - hosts:
+            - prometheus.staging.boldorigins.io 

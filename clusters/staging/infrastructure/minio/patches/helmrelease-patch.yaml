@@ -1,0 +1,48 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: minio
+  namespace: minio
+spec:
+  # Staging environment specific settings
+  interval: 15m  # Less frequent reconciliation for staging
+  values:
+    resources:
+      requests:
+        memory: "512Mi"
+        cpu: "100m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+    # Configure persistence
+    persistence:
+      size: 50Gi
+    # Enable service monitoring
+    metrics:
+      serviceMonitor:
+        enabled: true
+    # Set MinIO mode
+    mode: standalone
+    # Configure default buckets
+    buckets:
+      - name: loki
+        policy: none
+        purge: false
+      - name: prometheus
+        policy: none
+        purge: false
+      - name: tempo
+        policy: none
+        purge: false
+    # Configure API Gateway ingress
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      hosts:
+        - minio.staging.boldorigins.io
+      tls:
+        - secretName: minio-staging-tls
+          hosts:
+            - minio.staging.boldorigins.io 

@@ -1,119 +1,211 @@
 #!/bin/bash
-# UI Utilities for GitOps Scripts
-# Provides common UI functions for all component scripts
+#
+# ui.sh - UI library for Bold Origins scripts
+# This library provides consistent formatting and logging for scripts
+#
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
-
-# Formatting
-BOLD='\033[1m'
-UNDERLINE='\033[4m'
-
-# Log levels
+# Define log levels
 LOG_LEVEL_DEBUG=0
 LOG_LEVEL_INFO=1
-LOG_LEVEL_WARNING=2
-LOG_LEVEL_ERROR=3
-LOG_LEVEL_SUCCESS=4
+LOG_LEVEL_SUCCESS=2
+LOG_LEVEL_WARNING=3
+LOG_LEVEL_ERROR=4
 
-# Set default log level
-CURRENT_LOG_LEVEL=${LOG_LEVEL_INFO}
+# Default log level if not set by parent script
+CURRENT_LOG_LEVEL=${CURRENT_LOG_LEVEL:-$LOG_LEVEL_INFO}
 
-# Header functions
-ui_header() {
-  echo -e "${BOLD}${BLUE}==== $1 ====${NC}"
+# Colors
+RESET="\033[0m"
+BOLD="\033[1m"
+UNDERLINE="\033[4m"
+BLACK="\033[30m"
+RED="\033[31m"
+GREEN="\033[32m"
+YELLOW="\033[33m"
+BLUE="\033[34m"
+MAGENTA="\033[35m"
+CYAN="\033[36m"
+WHITE="\033[37m"
+BG_BLACK="\033[40m"
+BG_RED="\033[41m"
+BG_GREEN="\033[42m"
+BG_YELLOW="\033[43m"
+BG_BLUE="\033[44m"
+BG_MAGENTA="\033[45m"
+BG_CYAN="\033[46m"
+BG_WHITE="\033[47m"
+
+# Function to check if we're in a terminal
+function is_terminal() {
+  [ -t 1 ]
 }
 
-ui_subheader() {
-  echo -e "${BOLD}${CYAN}--- $1 ---${NC}"
+# Function to check if a log level should be displayed
+function should_log() {
+  local log_level=$1
+  [ $log_level -ge $CURRENT_LOG_LEVEL ]
 }
 
-# Log functions
-ui_log_debug() {
-  if [[ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_DEBUG} ]]; then
-    echo -e "${PURPLE}[DEBUG]${NC} $1"
+# Clear the current line
+function clear_line() {
+  if is_terminal; then
+    echo -ne "\r\033[K"
   fi
 }
 
-ui_log_info() {
-  if [[ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_INFO} ]]; then
-    echo -e "${BLUE}[INFO]${NC} $1"
-  fi
-}
-
-ui_log_warning() {
-  if [[ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_WARNING} ]]; then
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-  fi
-}
-
-ui_log_error() {
-  if [[ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_ERROR} ]]; then
-    echo -e "${RED}[ERROR]${NC} $1"
-  fi
-}
-
-ui_log_success() {
-  if [[ ${CURRENT_LOG_LEVEL} -le ${LOG_LEVEL_SUCCESS} ]]; then
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-  fi
-}
-
-# Progress functions
-ui_spinner() {
-  local pid=$1
-  local delay=0.1
-  local spinstr='|/-\'
-  while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
-    local temp=${spinstr#?}
-    printf " [%c]  " "$spinstr"
-    local spinstr=$temp${spinstr%"$temp"}
-    sleep $delay
-    printf "\b\b\b\b\b\b"
-  done
-  printf "    \b\b\b\b"
-}
-
-ui_progress() {
-  local current=$1
-  local total=$2
-  local message=$3
-  local percent=$(( ($current * 100) / $total ))
-  local progress=$(( ($current * 50) / $total ))
-  
-  printf "[%-50s] %d%% %s" $(printf "%${progress}s" | tr ' ' '#') $percent "$message"
-  echo -ne "\r"
-  
-  if [[ $current -eq $total ]]; then
-    echo
-  fi
-}
-
-# Prompt functions
-ui_confirm() {
-  local message=${1:-"Continue?"}
-  local defaultvalue=${2:-"Y"}
-  
-  if [[ $defaultvalue == "Y" ]]; then
-    prompt="[Y/n]"
+# Display a header
+function ui_header() {
+  if is_terminal; then
+    echo -e "\n${BOLD}${BG_BLUE}${WHITE} $1 ${RESET}\n"
   else
-    prompt="[y/N]"
+    echo -e "\n=== $1 ===\n"
+  fi
+}
+
+# Display a subheader
+function ui_subheader() {
+  if is_terminal; then
+    echo -e "\n${BOLD}${BLUE} $1 ${RESET}\n"
+  else
+    echo -e "\n--- $1 ---\n"
+  fi
+}
+
+# Log an info message
+function ui_log_info() {
+  if should_log $LOG_LEVEL_INFO; then
+    if is_terminal; then
+      echo -e "${CYAN}ℹ ${RESET}$1"
+    else
+      echo "INFO: $1"
+    fi
+  fi
+}
+
+# Log a debug message
+function ui_log_debug() {
+  if should_log $LOG_LEVEL_DEBUG; then
+    if is_terminal; then
+      echo -e "${MAGENTA}🔍 ${RESET}$1"
+    else
+      echo "DEBUG: $1"
+    fi
+  fi
+}
+
+# Log a success message
+function ui_log_success() {
+  if should_log $LOG_LEVEL_SUCCESS; then
+    if is_terminal; then
+      echo -e "${GREEN}✓ ${RESET}$1"
+    else
+      echo "SUCCESS: $1"
+    fi
+  fi
+}
+
+# Log a warning message
+function ui_log_warning() {
+  if should_log $LOG_LEVEL_WARNING; then
+    if is_terminal; then
+      echo -e "${YELLOW}⚠ ${RESET}$1"
+    else
+      echo "WARNING: $1"
+    fi
+  fi
+}
+
+# Log an error message
+function ui_log_error() {
+  if should_log $LOG_LEVEL_ERROR; then
+    if is_terminal; then
+      echo -e "${RED}✘ ${RESET}$1" >&2
+    else
+      echo "ERROR: $1" >&2
+    fi
+  fi
+}
+
+# Display a progress spinner
+# Usage: ui_spinner "Loading..." sleep 5
+function ui_spinner() {
+  local message=$1
+  local command=$2
+  local args=${@:3}
+  
+  if ! is_terminal; then
+    echo "$message..."
+    $command $args
+    return $?
   fi
   
-  echo -ne "${YELLOW}$message $prompt ${NC}"
-  read -r answer
+  local SPINNER='/-\|'
+  local i=0
+  local pid
   
-  if [[ -z "$answer" ]]; then
-    answer=$defaultvalue
+  # Start the command in the background
+  $command $args &
+  pid=$!
+  
+  # Display spinner while command is running
+  while kill -0 $pid 2>/dev/null; do
+    i=$(( (i+1) % 4 ))
+    printf "\r${CYAN}${SPINNER:$i:1}${RESET} %s" "$message"
+    sleep 0.1
+  done
+  
+  # Get the exit status of the command
+  wait $pid
+  local status=$?
+  
+  # Clear the spinner line
+  clear_line
+  
+  return $status
+}
+
+# Display a progress bar
+# Usage: ui_progress_bar "Processing" 10 5
+function ui_progress_bar() {
+  local message=$1
+  local total=$2
+  local current=$3
+  local width=30
+  
+  if ! is_terminal; then
+    echo "$message ($current/$total)..."
+    return 0
   fi
   
-  case "$answer" in
+  local percent=$((current * 100 / total))
+  local completed=$((width * current / total))
+  local remaining=$((width - completed))
+  
+  printf "\r${CYAN}%s${RESET} [" "$message"
+  printf "%${completed}s" | tr ' ' '='
+  printf "%${remaining}s" | tr ' ' ' '
+  printf "] %d%%" "$percent"
+}
+
+# Ask the user for confirmation
+# Returns 0 for yes, 1 for no
+function ui_confirm() {
+  local message=$1
+  local default=${2:-"n"}
+  
+  if [[ $default == "y" ]]; then
+    local prompt="[Y/n]"
+  else
+    local prompt="[y/N]"
+  fi
+  
+  read -p "$message $prompt " response
+  
+  if [[ -z $response ]]; then
+    response=$default
+  fi
+  
+  case "$response" in
     [yY][eE][sS]|[yY])
       return 0
       ;;
@@ -123,54 +215,106 @@ ui_confirm() {
   esac
 }
 
-ui_prompt() {
+# Wait for a process to finish and display a spinner
+# Usage: ui_wait_for_pid "Waiting for process" $pid
+function ui_wait_for_pid() {
   local message=$1
-  local defaultvalue=$2
+  local pid=$2
   
-  if [[ -n "$defaultvalue" ]]; then
-    echo -ne "${YELLOW}$message [${defaultvalue}]: ${NC}"
-  else
-    echo -ne "${YELLOW}$message: ${NC}"
+  if ! is_terminal; then
+    echo "$message..."
+    wait $pid
+    return $?
   fi
   
-  read -r answer
+  local SPINNER='/-\|'
+  local i=0
   
-  if [[ -z "$answer" && -n "$defaultvalue" ]]; then
-    answer=$defaultvalue
-  fi
+  # Display spinner while process is running
+  while kill -0 $pid 2>/dev/null; do
+    i=$(( (i+1) % 4 ))
+    printf "\r${CYAN}${SPINNER:$i:1}${RESET} %s" "$message"
+    sleep 0.1
+  done
   
-  echo "$answer"
+  # Get the exit status of the process
+  wait $pid
+  local status=$?
+  
+  # Clear the spinner line
+  clear_line
+  
+  return $status
 }
 
-# Display functions
-ui_divider() {
-  echo -e "${BLUE}----------------------------------------${NC}"
+# Display a table
+# Usage: ui_table "ID|Name|Status" "1|Test|Running" "2|Example|Stopped"
+function ui_table() {
+  local header=$1
+  local rows=${@:2}
+  local IFS="|"
+  
+  # Calculate column widths
+  local -a columns=($header)
+  local -a widths=()
+  
+  for column in "${columns[@]}"; do
+    widths+=(${#column})
+  done
+  
+  for row in $rows; do
+    local -a fields=($row)
+    for i in "${!fields[@]}"; do
+      if [ ${#fields[$i]} -gt ${widths[$i]} ]; then
+        widths[$i]=${#fields[$i]}
+      fi
+    done
+  done
+  
+  # Print header
+  local -a header_fields=($header)
+  local header_line=""
+  
+  for i in "${!header_fields[@]}"; do
+    if [ $i -eq 0 ]; then
+      printf "| %-${widths[$i]}s " "${header_fields[$i]}"
+    else
+      printf "| %-${widths[$i]}s " "${header_fields[$i]}"
+    fi
+    header_line+="|-"
+    for j in $(seq 1 ${widths[$i]}); do
+      header_line+="-"
+    done
+    header_line+=" "
+  done
+  printf "|\n"
+  
+  echo "$header_line|"
+  
+  # Print rows
+  for row in $rows; do
+    local -a fields=($row)
+    for i in "${!fields[@]}"; do
+      if [ $i -eq 0 ]; then
+        printf "| %-${widths[$i]}s " "${fields[$i]}"
+      else
+        printf "| %-${widths[$i]}s " "${fields[$i]}"
+      fi
+    done
+    printf "|\n"
+  done
 }
 
-ui_title() {
-  ui_divider
-  echo -e "${BOLD}${BLUE}$1${NC}"
-  ui_divider
-}
-
-ui_section() {
-  echo
-  echo -e "${BOLD}${CYAN}$1${NC}"
-  echo -e "${CYAN}$(printf '%*s' "${#1}" '' | tr ' ' '-')${NC}"
-}
-
-# Export all functions
+# Export functions
 export -f ui_header
 export -f ui_subheader
-export -f ui_log_debug
 export -f ui_log_info
+export -f ui_log_debug
+export -f ui_log_success
 export -f ui_log_warning
 export -f ui_log_error
-export -f ui_log_success
 export -f ui_spinner
-export -f ui_progress
+export -f ui_progress_bar
 export -f ui_confirm
-export -f ui_prompt
-export -f ui_divider
-export -f ui_title
-export -f ui_section 
+export -f ui_wait_for_pid
+export -f ui_table 

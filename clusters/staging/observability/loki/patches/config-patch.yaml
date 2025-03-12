@@ -1,0 +1,40 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: loki
+spec:
+  interval: 15m
+  values:
+    loki:
+      auth_enabled: false
+      storage:
+        type: filesystem
+      limits_config:
+        retention_period: 336h # 14 days
+    singleBinary:
+      replicas: 1
+      resources:
+        requests:
+          cpu: 200m
+          memory: 512Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+    gateway:
+      enabled: true
+      ingress:
+        enabled: true
+        ingressClassName: nginx
+        hosts:
+        - host: loki.staging.boldorigins.io
+          paths:
+          - path: /
+            pathType: Prefix
+        tls:
+        - hosts:
+          - loki.staging.boldorigins.io
+    persistence:
+      enabled: true
+      size: 50Gi
+      storageClass: local-path 

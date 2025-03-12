@@ -1,0 +1,18 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: staging-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 91.108.112.146-91.108.112.146  # Single IP allocated to the VPS
+
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: staging-l2-advertisement
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - staging-pool 

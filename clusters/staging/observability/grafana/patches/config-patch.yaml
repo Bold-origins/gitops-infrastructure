@@ -1,0 +1,27 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  interval: 15m
+  values:
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      hosts:
+        - grafana.staging.boldorigins.io
+      tls:
+        - hosts:
+            - grafana.staging.boldorigins.io
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    persistence:
+      enabled: true
+      size: 5Gi
+      storageClassName: local-path 

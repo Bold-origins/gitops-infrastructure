@@ -258,3 +258,136 @@ Feel free to adapt these improvements to best suit your project's specifics!
 - [Quick Start Guide](docs/QUICK_START.md) - Get up and running quickly
 - [Local Development Guide](docs/LOCAL_DEVELOPMENT.md) - Comprehensive guide for local development
 - [Troubleshooting Guide](docs/TROUBLESHOOTING.md) - Solutions for common issues
+
+# Bold Origins Kubernetes Cluster Configuration
+
+This repository contains the GitOps configuration for the Bold Origins Kubernetes clusters, including the staging environment setup.
+
+## Repository Structure
+
+The repository is organized as follows:
+
+- `base/`: Base configurations for all clusters
+- `clusters/`: Cluster-specific configurations
+  - `staging/`: Staging environment configuration
+- `scripts/`: Utility scripts for cluster management and operations
+
+## Staging Environment
+
+The staging environment is configured using [k3s](https://k3s.io/) and [Flux CD](https://fluxcd.io/) for GitOps. The staging environment is hosted on a VPS and is accessible at `staging.boldorigins.io`.
+
+## Available Scripts
+
+The following utility scripts are available to help with cluster management:
+
+### Basic Setup
+
+- `scripts/create-namespaces.sh`: Creates all required namespaces for the staging environment with proper labels.
+- `scripts/install-flux.sh`: Installs and configures Flux CD for GitOps.
+
+### Secret Management
+
+- `scripts/secrets/setup-supabase-secrets.sh`: Generates and configures Supabase secrets for the staging environment.
+- `scripts/secrets/setup-vault.sh`: Initializes and configures Vault for the staging environment, setting up policies and tokens.
+
+### Infrastructure Setup
+
+- `scripts/setup-metallb.sh`: Configures MetalLB for load balancing in the staging environment.
+- `scripts/setup-policy-engine.sh`: Sets up Gatekeeper policies for the staging environment.
+
+### Security
+
+- `scripts/security/audit-kubernetes.sh`: Performs a security audit of the Kubernetes cluster, checking for potential security issues.
+
+### Main Setup Script
+
+- `scripts/setup-staging-environment.sh`: A menu-driven interface for running all the setup scripts in the correct order.
+
+## Getting Started
+
+To get started with the staging environment, follow these steps:
+
+1. Clone this repository
+   ```bash
+   git clone https://github.com/yourusername/boldorigins-cluster.git
+   cd boldorigins-cluster
+   ```
+
+2. Install the required tools:
+   - `kubectl`: For interacting with the Kubernetes cluster
+   - `flux`: For managing the GitOps workflow
+   - `kubeseal`: For encrypting Kubernetes secrets
+   - `git`: For version control
+   - `vault` (optional): For managing secrets with Vault
+
+3. Run the setup script:
+   ```bash
+   ./scripts/setup-staging-environment.sh
+   ```
+
+4. Follow the prompts to set up the staging environment. The recommended order is:
+   - Create Required Namespaces
+   - Install Flux CD
+   - Set up MetalLB
+   - Set up Gatekeeper Policies
+   - Set up Vault
+   - Set up Supabase Secrets
+   - Run Security Audit
+
+Alternatively, select option 8 to run the full setup in the correct order.
+
+## Cluster Configuration
+
+### Namespaces
+
+The staging environment uses the following namespaces:
+
+- `flux-system`: Flux GitOps system
+- `metallb-system`: MetalLB load balancer
+- `gatekeeper-system`: OPA Gatekeeper policy engine
+- `sealed-secrets`: Sealed Secrets controller
+- `vault`: HashiCorp Vault secrets management
+- `cert-manager`: Certificate management
+- `minio`: MinIO object storage
+- `monitoring`: Monitoring tools (Prometheus, Grafana)
+- `loki`: Loki logging system
+- `tempo`: Tempo tracing system
+- `supabase`: Supabase database platform
+- `security`: Security tools
+
+### Network Configuration
+
+The staging environment uses [MetalLB](https://metallb.io/) for load balancing. The MetalLB configuration is stored in `clusters/staging/infrastructure/metallb`.
+
+### Secrets Management
+
+The staging environment uses both Sealed Secrets and Vault for managing secrets:
+
+- **Sealed Secrets**: Used for Kubernetes secrets that need to be stored in Git
+- **Vault**: Used for more sensitive secrets and dynamic secrets
+
+Run the `scripts/secrets/setup-vault.sh` script to initialize and configure Vault.
+
+## Security
+
+The staging environment is configured with security best practices in mind, including:
+
+- Network policies to restrict communication between pods
+- Sealed Secrets for encrypting sensitive data
+- Vault for managing secrets
+- Gatekeeper policies for enforcing security constraints
+
+Use the `scripts/security/audit-kubernetes.sh` script to check for potential security issues.
+
+## Contributing
+
+When contributing to this repository, please follow the GitOps workflow:
+
+1. Make changes to the configuration files
+2. Commit and push to a new branch
+3. Create a pull request
+4. Once approved, the changes will be automatically applied to the cluster
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

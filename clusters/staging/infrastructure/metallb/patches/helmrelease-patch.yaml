@@ -1,0 +1,33 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: metallb
+  namespace: metallb-system
+spec:
+  interval: 15m
+  values:
+    # Enable service monitoring
+    prometheus:
+      serviceMonitor:
+        enabled: true
+    # Configure MetalLB controller resources
+    controller:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 256Mi
+    # Configure MetalLB speaker resources
+    speaker:
+      resources:
+        requests:
+          cpu: 50m
+          memory: 64Mi
+        limits:
+          cpu: 100m
+          memory: 128Mi
+    # Configure logging level
+    logging:
+      level: info 
