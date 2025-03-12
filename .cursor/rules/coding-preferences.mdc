@@ -1,0 +1,48 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# GitOps Repository Rules
+
+## 1. Code Structure and Quality Standards
+- All Kubernetes resources must follow a consistent naming convention: `<component>-<type>-<optional-qualifier>.yaml`
+- Every kustomization.yaml must be validated with `kustomize build` before commit
+- Helm values must be structured with explicit sections and commented for clarity
+- Use strategic patching over complete resource replacement 
+- Commit messages must follow format: `[AREA] ACTION: detailed description` (e.g., `[infra/cert-manager] UPDATE: added wildcard certificate support`)
+
+## 2. Component Introduction Policy
+- New components require documented evaluation of existing tools in `planning/evaluations/<component>.md`
+- Components must be added first to base, then to local environment with complete testing
+- New infrastructure must include:
+  - Namespace definition
+  - Network policies
+  - Resource limits
+  - Monitoring integration
+  - Example configurations
+- Each new component must have an accompanying script in `scripts/gitops/components/`
+
+## 3. Contributor Personas and Responsibilities
+- PLATFORM_ENGINEER: May modify infrastructure and base components
+- APPLICATION_DEVELOPER: May only modify application deployments and their values
+- SECURITY_ENGINEER: May modify policies, network rules, and security settings
+- OBSERVABILITY_ENGINEER: May modify monitoring, alerting, and observability stack
+- All changes by any persona must adhere to the established GitOps workflow
+
+## 4. CI/CD and GitOps Workflow
+- All changes flow through Pull Requests, never direct to main
+- PRs require:
+  - Validation workflow success (kustomize build, yamllint, etc.)
+  - Pre-deployment checks in `planning/PROGRESS.md`
+  - At least one reviewer approval
+- Environment promotion follows: local → staging → production
+- Flux reconciliation issues must be resolved before continuing work
+- Sealed Secrets must be regenerated when promoting between environments
+
+## 5. Progress Tracking and Documentation
+- All planned changes must be documented in `planning/PROGRESS.md` before implementation
+- Completed items must be marked with date, commit reference, and outcome
+- Major architectural decisions must have an ADR (Architecture Decision Record) in `planning/decisions/`
+- Troubleshooting steps must be documented in `docs/TROUBLESHOOTING.md`
+- Monthly infrastructure reviews must be scheduled and documented in `planning/reviews/`
