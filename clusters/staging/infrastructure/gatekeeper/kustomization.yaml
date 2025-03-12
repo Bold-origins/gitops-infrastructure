@@ -4,6 +4,8 @@ kind: Kustomization
 # Reference the base gatekeeper configuration
 resources:
 - ../../../../clusters/base/infrastructure/gatekeeper
+# Include RBAC resources
+- rbac/gatekeeper-rbac.yaml
 
 # Common labels for all resources
 commonLabels:

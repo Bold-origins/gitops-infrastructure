@@ -37,4 +37,11 @@ spec:
     # Enable mutations and validations
     mutations:
       enabled: true
-    validatingWebhookTimeoutSeconds: 3 
+    validatingWebhookTimeoutSeconds: 3
+    # Use our custom service account with proper permissions
+    global:
+      rbac:
+        create: false
+    serviceAccount:
+      create: false
+      name: "gatekeeper-admin" 
