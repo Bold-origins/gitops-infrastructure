@@ -39,9 +39,8 @@ spec:
       enabled: true
     validatingWebhookTimeoutSeconds: 3
     # Use our custom service account with proper permissions
-    global:
-      rbac:
-        create: false
+    rbac:
+      create: false
     serviceAccount:
       create: false
       name: "gatekeeper-admin" 
