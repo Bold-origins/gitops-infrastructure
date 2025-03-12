@@ -11,6 +11,19 @@ commonAnnotations:
   source: "gitops-infrastructure"
 
 resources:
+  # Start with just namespaces for now
+  - infrastructure/namespaces
+
+# Using commonLabels for consistent labeling
+commonLabels:
+  environment: staging
+  managed-by: kustomize
+
+# Common annotations to be added to all resources
+commonAnnotations:
+  source: "gitops-infrastructure"
+
+resources:
   - infrastructure/cert-manager
   - infrastructure/sealed-secrets
   - infrastructure/vault

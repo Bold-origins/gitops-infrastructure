@@ -1,4 +1,6 @@
-apiVersion: helm.toolkit.fluxcd.io/v2
+---
+# This is a patch for the vault HelmRelease
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: vault
