@@ -1,0 +1,88 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: metallb-system
+  labels:
+    environment: staging
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gatekeeper-system
+  labels:
+    environment: staging
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sealed-secrets
+  labels:
+    environment: staging
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vault
+  labels:
+    environment: staging
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    environment: staging
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: minio
+  labels:
+    environment: staging
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    environment: staging
+    tier: observability
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: loki
+  labels:
+    environment: staging
+    tier: observability
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tempo
+  labels:
+    environment: staging
+    tier: observability
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: supabase
+  labels:
+    environment: staging
+    tier: applications
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security
+  labels:
+    environment: staging
+    tier: infrastructure 
