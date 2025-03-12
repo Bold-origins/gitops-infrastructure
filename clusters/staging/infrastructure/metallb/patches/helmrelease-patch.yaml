@@ -5,6 +5,12 @@ metadata:
   namespace: metallb-system
 spec:
   interval: 15m
+  chart:
+    spec:
+      sourceRef:
+        kind: HelmRepository
+        name: metallb
+        namespace: metallb-system
   values:
     # Enable service monitoring
     prometheus:

@@ -19,6 +19,7 @@ resources:
   - infrastructure/sealed-secrets
   - infrastructure/vault
   - infrastructure/gatekeeper
+  - infrastructure/metallb
 
   # Applications components
   - applications
