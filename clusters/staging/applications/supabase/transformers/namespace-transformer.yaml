@@ -1,0 +1,11 @@
+apiVersion: builtin
+kind: NamespaceTransformer
+metadata:
+  name: namespace-transformer
+  annotations:
+    config.kubernetes.io/function: |
+      path: https://kind.sigs.k8s.io/namespacetransformer
+namespace: supabase
+fieldSpecs:
+- path: metadata/namespace
+  create: true 

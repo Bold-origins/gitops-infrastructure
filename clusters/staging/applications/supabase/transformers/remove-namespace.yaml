@@ -1,0 +1,26 @@
+apiVersion: builtin
+kind: PatchTransformer
+metadata:
+  name: remove-namespace
+target:
+  kind: Namespace
+  name: supabase
+patch: |
+  $patch: delete
+  apiVersion: v1
+  kind: Namespace
+  metadata:
+    name: supabase
+---
+# This transformer ensures all resources use the centralized namespace
+apiVersion: builtin
+kind: NamespaceTransformer
+metadata:
+  name: not-transform-namespace
+  annotations:
+    config.kubernetes.io/function: |
+      path: https://kind.sigs.k8s.io/namespacetransformer
+namespace: supabase
+fieldSpecs:
+- path: metadata/namespace
+  create: true 
