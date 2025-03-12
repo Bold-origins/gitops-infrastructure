@@ -67,6 +67,13 @@ metadata:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: observability
+  labels:
+    tier: observability
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: monitoring
   labels:
     tier: observability
