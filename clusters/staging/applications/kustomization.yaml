@@ -8,6 +8,4 @@ commonLabels:
 
 resources:
   # Include specific applications for staging
-  # Initially we'll move our test-app to this structure
-  - test-app
   - supabase 
